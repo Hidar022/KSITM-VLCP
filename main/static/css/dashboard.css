@@ -1,0 +1,171 @@
+/* ===========================
+   Dashboard General Styles
+=========================== */
+
+/* Body */
+body {
+    background: #0f172a; /* blue-dark background */
+    font-family: 'Poppins', sans-serif;
+    color: white;
+    margin: 0;
+    padding: 0;
+}
+
+/* Dashboard Wrapper */
+.dashboard-wrapper {
+    display: flex;
+    flex-direction: column; /* Cards on top */
+    min-height: 100vh;
+    padding-top: 80px; /* leave space for navbar */
+    align-items: center;
+    overflow-x: hidden;
+}
+
+/* Page Title */
+.page-title {
+    font-size: 28px;
+    font-weight: 600;
+    margin-bottom: 15px;
+    text-shadow: 0 0 6px rgba(255,255,255,0.4);
+    text-align: center;
+}
+
+/* Card Grid */
+.card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 22px;
+    width: 100%;
+    max-width: 1200px;
+    margin-top: 20px;
+    padding: 0 15px;
+}
+
+/* Cards */
+.card {
+    background: rgba(37,99,235,0.2); /* blue-ish background */
+    border-radius: 12px;
+    padding: 22px;
+    border: 1px solid rgba(255,255,255,0.15);
+    text-align: center;
+    transition: all 0.3s ease;
+    color: white;
+    font-weight: 500;
+    backdrop-filter: blur(8px);
+    text-decoration: none; /* for <a> cards */
+}
+
+.card:hover {
+    background: rgba(37,99,235,0.3);
+    transform: translateY(-6px) scale(1.02);
+    box-shadow: 0 12px 20px rgba(37,99,235,0.4);
+}
+
+/* Buttons */
+.btn-light {
+    color: #0f172a;
+    font-weight: 500;
+    transition: 0.3s;
+}
+
+.btn-light:hover {
+    color: #fff;
+    background: linear-gradient(90deg, #2563eb, #4f46e5);
+    box-shadow: 0 0 12px rgba(37,99,235,0.6);
+}
+
+/* ===========================
+   Optional Sidebar (if used)
+=========================== */
+.sidebar {
+    width: 260px;
+    background: rgba(255,255,255,0.06);
+    backdrop-filter: blur(14px);
+    padding: 25px 18px;
+    border-right: 1px solid rgba(255,255,255,0.15);
+}
+
+.sidebar .logo img {
+    width: 85px;
+    height: 85px;
+    border-radius: 50%;
+    border: 2px solid rgba(255,255,255,0.3);
+    animation: rotate 6s linear infinite;
+}
+
+@keyframes rotate {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.menu-item {
+    display: block;
+    margin: 12px 0;
+    padding: 10px;
+    border-radius: 6px;
+    color: white;
+    font-weight: 500;
+    transition: 0.3s;
+    text-decoration: none;
+}
+
+.menu-item:hover {
+    background: rgba(37,99,235,0.4);
+}
+
+/* ===========================
+   Floating Shapes Animation
+=========================== */
+.floating-shape {
+    position: absolute;
+    border-radius: 50%;
+    opacity: 0.15;
+    animation: float 20s linear infinite;
+}
+
+@keyframes float {
+    0% { transform: translateY(0) translateX(0); }
+    50% { transform: translateY(-50px) translateX(30px); }
+    100% { transform: translateY(0) translateX(0); }
+}
+
+/* ===========================
+   Footer Styles
+=========================== */
+.footer {
+    position: sticky;
+    bottom: 0;
+    width: 100%;
+    background-color: #222;
+    color: #fff;
+    text-align: center;
+    padding: 15px 0;
+    transition: transform 0.4s ease;
+    z-index: 1000;
+}
+
+body.scrolled .footer {
+    transform: translateY(0);
+}
+
+body:not(.scrolled) .footer {
+    transform: translateY(100%);
+}
+
+/* ===========================
+   Responsive
+=========================== */
+@media (max-width: 768px) {
+    .dashboard-wrapper {
+        flex-direction: column;
+    }
+    .sidebar {
+        width: 100%;
+        height: auto;
+        position: relative;
+        border-right: none;
+    }
+    .main-content {
+        padding: 15px;
+    }
+}

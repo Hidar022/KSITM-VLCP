@@ -1,0 +1,12 @@
+<div class="section">
+  <h3>📄 Results</h3>
+  {% if results %}
+      <ul>
+          {% for result in results %}
+              <li>{{ result.student.username }} — {{ result.course.name }}: {{ result.score }}</li>
+          {% endfor %}
+      </ul>
+  {% else %}
+      <p>No results uploaded yet.</p>
+  {% endif %}
+</div>

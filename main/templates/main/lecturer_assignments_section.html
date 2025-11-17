@@ -1,0 +1,12 @@
+<div class="section">
+    <h3>Your Assignments</h3>
+    {% if assignments %}
+        <ul>
+            {% for assignment in assignments %}
+                <li>{{ assignment.title }} - {{ assignment.deadline }}</li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p>No assignments available.</p>
+    {% endif %}
+</div>

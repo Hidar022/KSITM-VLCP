@@ -1,0 +1,227 @@
+{% extends 'main/base.html' %}
+{% load static %}
+
+{% block title %}Welcome - KSITM Virtual Learning Platform{% endblock %}
+
+{% block content %}
+<style>
+/* Hover Animations for Cards */
+.hover-card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.hover-card:hover {
+    transform: scale(1.05);
+    box-shadow: 0 15px 25px rgba(245, 134, 52, 0.4);
+}
+
+/* Hero Button Pulse */
+.btn-warning.animate__pulse {
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); }
+}
+
+/* Optional: Hero Image Floating Slightly */
+.floating-img {
+    animation: floatHero 6s ease-in-out infinite;
+}
+
+@keyframes floatHero {
+    0% { transform: translateY(0px); }
+    50% { transform: translateY(-10px); }
+    100% { transform: translateY(0px); }
+}
+</style>
+
+
+<!-- Hero Section -->
+<section class="container-fluid py-5 position-relative" style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); overflow:hidden;">
+    
+    <!-- Floating Shapes -->
+    <div class="floating-shape" style="width: 120px; height: 120px; background: rgba(245,134,52,0.2); border-radius: 50%; top: 10%; left: 5%; animation: float1 10s infinite alternate;"></div>
+    <div class="floating-shape" style="width: 80px; height: 80px; background: rgba(56,189,248,0.2); border-radius: 50%; top: 30%; right: 10%; animation: float2 12s infinite alternate;"></div>
+    <div class="floating-shape" style="width: 100px; height: 100px; background: rgba(251,191,36,0.15); border-radius: 50%; bottom: 15%; left: 25%; animation: float3 14s infinite alternate;"></div>
+
+    <div class="container position-relative">
+        <div class="row align-items-center">
+
+            <!-- Left Text -->
+            <div class="col-md-6 text-white" data-aos="fade-right" data-aos-duration="1200">
+                <h1 class="fw-bold display-4 mb-3">
+                    Empower Your Learning <span style="color:#F58634;">Journey</span>
+                </h1>
+                <p class="lead text-light">
+                    KSITM Virtual Learning & Collaboration Platform connects students and lecturers 
+                    for seamless academic growth — anytime, anywhere. Learn, share, and collaborate effortlessly.
+                </p>
+                <a href="/register" class="btn btn-warning btn-lg mt-3 shadow-lg animate__animated animate__pulse animate__infinite">
+                    Get Started
+                </a>
+            </div>
+
+            <!-- Right Hero Image -->
+            <div class="col-md-6 text-center" data-aos="zoom-in" data-aos-duration="1200">
+                <img src="{% static 'images/hero_students.png' %}" 
+                     alt="Students Learning" 
+                     class="img-fluid rounded-4 shadow-lg" 
+                     style="max-height: 450px;">
+            </div>
+
+        </div>
+    </div>
+</section>
+
+<!-- About Section -->
+<section class="py-5" style="background-color:#111827;">
+    <div class="container text-white">
+        <div class="row align-items-center">
+
+            <!-- Image -->
+            <div class="col-md-5 mb-4 mb-md-0" data-aos="fade-right">
+                <img src="{% static 'images/classroom_collaboration.png' %}" 
+                     alt="Collaboration" 
+                     class="img-fluid rounded shadow-lg">
+            </div>
+
+            <!-- Text -->
+            <div class="col-md-7" data-aos="fade-left">
+                <h2 class="fw-bold mb-3">Why KSITM VLCP?</h2>
+                <p class="text-light mb-3">
+                    Experience a modern, interactive learning platform that empowers students and lecturers 
+                    to collaborate beyond the traditional classroom. Access lectures, submit assignments, 
+                    participate in discussions, and grow together — all in one place.
+                </p>
+                <ul class="list-unstyled">
+                    <li class="mb-2" data-aos="fade-left" data-aos-delay="100">✅ Access lectures & resources anytime</li>
+                    <li class="mb-2" data-aos="fade-left" data-aos-delay="200">✅ Real-time communication and chat</li>
+                    <li class="mb-2" data-aos="fade-left" data-aos-delay="300">✅ Collaborative group projects & discussions</li>
+                </ul>
+            </div>
+
+        </div>
+    </div>
+</section>
+
+<!-- Courses Preview Section -->
+<section class="py-5" style="background-color:#0f172a;">
+    <div class="container text-white text-center">
+
+        <h2 class="fw-bold mb-3" data-aos="fade-up">Explore Popular Courses</h2>
+        <p class="text-light mb-5" data-aos="fade-up" data-aos-delay="200">
+            Courses taught by experienced instructors to boost your skills.
+        </p>
+
+        <div class="row row-cols-1 row-cols-md-3 g-4">
+
+            <div class="col" data-aos="zoom-in">
+                <div class="card h-100 border-0 shadow-lg hover-card bg-gray-900 text-white position-relative overflow-hidden">
+                    <img src="{% static 'images/course_it.png' %}" class="card-img-top rounded-top" alt="IT Course">
+                    <div class="card-body position-relative" style="background: rgba(0,0,0,0.5);">
+                        <h5 class="fw-bold">Introduction to Computing</h5>
+                        <p class="text-light small">Learn the basics of computing, hardware, and software systems.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col" data-aos="zoom-in" data-aos-delay="200">
+                <div class="card h-100 border-0 shadow-lg hover-card bg-gray-900 text-white position-relative overflow-hidden">
+                    <img src="{% static 'images/course_network.png' %}" class="card-img-top rounded-top" alt="Networking">
+                    <div class="card-body position-relative" style="background: rgba(0,0,0,0.5);">
+                        <h5 class="fw-bold">Networking & Cybersecurity</h5>
+                        <p class="text-light small">Understand network structures and how to protect them from threats.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col" data-aos="zoom-in" data-aos-delay="400">
+                <div class="card h-100 border-0 shadow-lg hover-card bg-gray-900 text-white position-relative overflow-hidden">
+                    <img src="{% static 'images/course_business.png' %}" class="card-img-top rounded-top" alt="Business">
+                    <div class="card-body position-relative" style="background: rgba(0,0,0,0.5);">
+                        <h5 class="fw-bold">Business Management</h5>
+                        <p class="text-light small">Develop leadership, planning, and decision-making skills.</p>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <a href="/courses" class="btn btn-warning btn-lg mt-4 animate__animated animate__pulse animate__infinite">
+            View All Courses
+        </a>
+
+    </div>
+</section>
+
+<!-- Collaboration Features Section -->
+<section class="py-5" style="background-color:#1e293b;">
+    <div class="container">
+
+        <div class="text-center mb-5 text-white">
+            <h2 class="fw-bold" data-aos="fade-up">Collaboration & Communication</h2>
+            <p class="text-light" data-aos="fade-up" data-aos-delay="200">
+                Connect with lecturers and classmates in real-time and work together seamlessly.
+            </p>
+        </div>
+
+        <div class="row g-4 text-center text-white">
+
+            <div class="col-md-4" data-aos="fade-right">
+                <div class="card border-0 shadow-lg hover-card h-100 bg-gray-900 p-4">
+                    <img src="{% static 'images/chat_icon.png' %}" alt="Chat" class="mb-3" style="width: 80px;">
+                    <h5 class="fw-bold">Discussion Chat</h5>
+                    <p class="text-light">Engage in academic discussions and group chats in real-time.</p>
+                </div>
+            </div>
+
+            <div class="col-md-4" data-aos="fade-up">
+                <div class="card border-0 shadow-lg hover-card h-100 bg-gray-900 p-4">
+                    <img src="{% static 'images/group_icon.png' %}" alt="Group Collaboration" class="mb-3" style="width: 80px;">
+                    <h5 class="fw-bold">Group Collaboration</h5>
+                    <p class="text-light">Work together on assignments and projects effortlessly.</p>
+                </div>
+            </div>
+
+            <div class="col-md-4" data-aos="fade-left">
+                <div class="card border-0 shadow-lg hover-card h-100 bg-gray-900 p-4">
+                    <img src="{% static 'images/announcement_icon.png' %}" alt="Announcements" class="mb-3" style="width: 80px;">
+                    <h5 class="fw-bold">Announcements Board</h5>
+                    <p class="text-light">Stay updated with lessons, deadlines, and school notices.</p>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</section>
+
+<!-- Floating Shapes Animations -->
+<style>
+.floating-shape {
+    position: absolute;
+    pointer-events: none;
+}
+
+@keyframes float1 {
+    0% { transform: translateY(0) translateX(0); }
+    50% { transform: translateY(-20px) translateX(10px); }
+    100% { transform: translateY(0) translateX(0); }
+}
+
+@keyframes float2 {
+    0% { transform: translateY(0) translateX(0); }
+    50% { transform: translateY(-15px) translateX(-10px); }
+    100% { transform: translateY(0) translateX(0); }
+}
+
+@keyframes float3 {
+    0% { transform: translateY(0) translateX(0); }
+    50% { transform: translateY(-25px) translateX(15px); }
+    100% { transform: translateY(0) translateX(0); }
+}
+</style>
+
+{% endblock %}

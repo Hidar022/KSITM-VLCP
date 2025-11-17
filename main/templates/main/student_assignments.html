@@ -1,0 +1,15 @@
+{% extends 'main/base.html' %}
+
+{% block content %}
+<h1>Your Assignments</h1>
+<ul>
+    {% for assignment in assignments %}
+    <li>
+        <a href="{% url 'assignment_detail' assignment.id %}">{{ assignment.title }}</a> 
+        - Due: {{ assignment.due_date }}
+    </li>
+    {% empty %}
+    <li>No assignments yet.</li>
+    {% endfor %}
+</ul>
+{% endblock %}

@@ -1,0 +1,36 @@
+{% extends "main/base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="container py-5">
+    <h2>{{ course.title }}</h2>
+    <p class="text-muted">{{ course.department }}</p>
+    <p>{{ course.description }}</p>
+
+    <hr>
+
+    <h4>📘 Course Materials</h4>
+    {% if materials %}
+        <ul>
+        {% for m in materials %}
+            <li><a href="{{ m.file.url }}" download>{{ m.title }}</a></li>
+        {% endfor %}
+        </ul>
+    {% else %}
+        <p>No materials uploaded yet.</p>
+    {% endif %}
+
+    <hr>
+
+    <h4>📝 Assignments</h4>
+    {% if assignments %}
+        <ul>
+        {% for a in assignments %}
+            <li><strong>{{ a.title }}</strong> — Due: {{ a.due_date }}</li>
+        {% endfor %}
+        </ul>
+    {% else %}
+        <p>No assignments available yet.</p>
+    {% endif %}
+</div>
+{% endblock %}

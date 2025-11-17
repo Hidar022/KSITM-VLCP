@@ -1,0 +1,196 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}KSITM Virtual Learning Platform{% endblock %}</title>
+
+    <!-- Bootstrap 5 -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- AOS -->
+    <link rel="stylesheet" href="https://unpkg.com/aos@2.3.1/dist/aos.css">
+
+    <!-- Animate.css -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+
+    <link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+
+    <style>
+        body {
+            margin: 0;
+            font-family: 'Poppins', sans-serif;
+            background-color: #0f172a;
+            color: #ffffff;
+        }
+
+        a { text-decoration: none; }
+
+        /* Navbar */
+        nav.navbar {
+            background: #1e293b !important;
+        }
+
+        .brand-logo {
+            height: 55px;
+            width: 55px;
+            border-radius: 50%;
+            object-fit: cover;
+            animation: floatLogo 4s infinite ease-in-out;
+            border: 2px solid rgba(255,255,255,0.4);
+        }
+
+        .brand-title {
+            color: white !important;
+            font-weight: 700;
+            font-size: 15px;
+            line-height: 18px;
+        }
+
+        .brand-title .highlight { color: #F58634; }
+
+        .nav-link { color: white !important; }
+        .nav-link:hover { color: #F58634 !important; }
+
+        /* Footer */
+        footer {
+            background: #1e293b;
+            color: white;
+            padding: 2rem 0;
+        }
+
+        footer a { color: white; }
+        footer a:hover { color: #F58634; }
+
+        @keyframes floatLogo {
+            0% { transform: translateY(0); }
+            50% { transform: translateY(-6px); }
+            100% { transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+
+<!-- Navbar -->
+<nav class="navbar navbar-expand-lg shadow-sm fixed-top">
+    <div class="container d-flex align-items-center">
+        <a class="navbar-brand d-flex align-items-center" href="/">
+            <img src="{% static 'images/ksitm_logo.png' %}" class="brand-logo">
+            <span class="brand-title ms-2">
+                KSITM <span class="highlight">VIRTUAL LEARNING</span><br>
+                AND COLLABORATION PLATFORM
+            </span>
+        </a>
+
+        <button class="navbar-toggler bg-light" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
+            <ul class="navbar-nav">
+                {% if user.is_authenticated %}
+                    <li class="nav-item">
+                        <a class="nav-link fw-semibold" href="{% url 'dashboard' %}">Dashboard</a>
+                    </li>
+                    <li class="nav-item">
+                        <form method="post" action="{% url 'site_logout' %}" class="d-inline">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-danger px-4 ms-2 fw-semibold">Logout</button>
+                        </form>
+                    </li>
+                {% else %}
+                    <li class="nav-item"><a class="nav-link fw-semibold" href="/">Home</a></li>
+                    <li class="nav-item"><a class="nav-link fw-semibold" href="/courses">Courses</a></li>
+                    <li class="nav-item">
+                        <a class="btn btn-warning px-4 ms-2 fw-semibold" href="/login">Login</a>
+                    </li>
+                {% endif %}
+            </ul>
+        </div>
+    </div>
+</nav>
+
+<!-- Flash Messages -->
+<div class="container" style="margin-top: 90px;">
+    {% if messages %}
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags|default:'info' }} alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        {% endfor %}
+    {% endif %}
+</div>
+
+<!-- Hero Section -->
+{% block hero %}{% endblock hero %}
+
+<!-- Main Content -->
+<div class="container py-5">
+    {% block content %}{% endblock content %}
+</div>
+
+<!-- Footer -->
+{% if not hide_footer %}
+<footer class="text-center text-md-start">
+    <div class="container">
+        <div class="row text-center text-md-start align-items-center">
+            <div class="col-md-4 mb-3 mb-md-0" data-aos="fade-up">
+                <img src="{% static 'images/ksitm_logo.png' %}" alt="Logo" style="height:60px; border-radius:50%;">
+                <p class="mt-2 fw-bold">Katsina State Institute of Technology and Management</p>
+                <small>© <span id="year"></span></small>
+            </div>
+            <div class="col-md-4 mb-3 mb-md-0" data-aos="fade-up" data-aos-delay="150">
+                <h6 class="fw-bold">Quick Links</h6>
+                <ul class="list-unstyled">
+                    <li><a href="/">Home</a></li>
+                    <li><a href="/courses">Courses</a></li>
+                    <li><a href="/login">Login</a></li>
+                </ul>
+            </div>
+            <div class="col-md-4" data-aos="fade-up" data-aos-delay="300">
+                <h6 class="fw-bold">Contact</h6>
+                <p class="mb-1">Email: info@ksitm.edu.ng</p>
+                <p class="mb-1">Phone: +234 123 456 7890</p>
+                <div class="d-flex justify-content-center justify-content-md-start gap-3 mt-2">
+                    <a href="#"><i class="bi bi-facebook fs-5"></i></a>
+                    <a href="#"><i class="bi bi-twitter fs-5"></i></a>
+                    <a href="#"><i class="bi bi-instagram fs-5"></i></a>
+                </div>
+            </div>
+        </div>
+    </div>
+</footer>
+<script>
+    document.getElementById("year").innerHTML = new Date().getFullYear();
+</script>
+{% endif %}
+
+<!-- Scripts -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+<script>
+    AOS.init({ duration: 1200 });
+</script>
+<script>
+let lastScroll = 0;
+const body = document.body;
+window.addEventListener('scroll', () => {
+    const currentScroll = window.pageYOffset;
+    if(currentScroll > lastScroll){
+        // scrolling down
+        body.classList.remove('scrolled');
+    } else {
+        // scrolling up
+        body.classList.add('scrolled');
+    }
+    lastScroll = currentScroll;
+});
+</script>
+
+</body>
+</html>

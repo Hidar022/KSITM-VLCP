@@ -1,0 +1,248 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Chat</title>
+    <link rel="stylesheet" href="{% static 'dashboard.css' %}">
+    <style>
+        /* Chat-specific styles overriding dashboard.css where needed */
+        body { display: flex; height: 100vh; margin: 0; background: #0f172a; }
+
+        /* Sidebar */
+        .sidebar {
+            width: 25%;
+            background: rgba(15,23,42,0.85); /* dark but slightly transparent */
+            border-right: 1px solid rgba(255,255,255,0.1);
+            overflow-y: auto;
+            padding-top: 20px;
+            position: relative;
+        }
+
+        /* Floating shapes in sidebar */
+        .sidebar .floating-shape {
+            position: absolute;
+            border-radius: 50%;
+            opacity: 0.08;
+            animation: float 20s linear infinite;
+        }
+
+        .shape1 { width: 80px; height: 80px; background: #2563eb; top: 40px; left: 20px; }
+        .shape2 { width: 60px; height: 60px; background: #4f46e5; bottom: 50px; right: 30px; }
+
+        @keyframes float {
+            0% { transform: translateY(0) translateX(0); }
+            50% { transform: translateY(-20px) translateX(15px); }
+            100% { transform: translateY(0) translateX(0); }
+        }
+
+        /* Logo */
+        .logo-container {
+            text-align: center;
+            margin-bottom: 20px;
+            position: relative;
+            z-index: 2;
+        }
+
+        .logo-container img {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            border: 2px solid rgba(255,255,255,0.3);
+            animation: rotate 6s linear infinite;
+        }
+
+        @keyframes rotate {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Users list */
+        .user {
+            padding: 12px 20px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            cursor: pointer;
+            color: #f0f0f0;
+            font-weight: 500;
+            transition: all 0.3s;
+            text-shadow: 0 0 3px rgba(0,0,0,0.7);
+        }
+
+        .user:hover {
+            background: rgba(37, 99, 235, 0.6);
+            color: white;
+            box-shadow: 0 0 8px rgba(37,99,235,0.6);
+        }
+
+        /* Chat area */
+        .chat-area {
+            width: 75%;
+            display: flex;
+            flex-direction: column;
+            background: #0f172a;
+            position: relative;
+        }
+
+        /* Messages */
+        .messages {
+            flex: 1;
+            padding: 15px;
+            overflow-y: auto;
+        }
+
+        .msg {
+            margin-bottom: 12px;
+            display: flex;
+        }
+
+        .me { justify-content: flex-end; }
+
+        .bubble {
+            padding: 10px;
+            border-radius: 10px;
+            display: inline-block;
+            background: rgba(255,255,255,0.1);
+            color: white;
+            max-width: 70%;
+            word-wrap: break-word;
+        }
+
+        .me .bubble { background: #2563eb; color: white; }
+
+        /* Input box */
+        .input-box {
+            display: flex;
+            border-top: 1px solid rgba(255,255,255,0.1);
+            padding: 10px;
+            gap: 10px;
+            background: #111827;
+        }
+
+        .input-box input {
+            flex: 1;
+            padding: 12px;
+            border-radius: 6px;
+            border: 1px solid rgba(255,255,255,0.2);
+            background: #1e293b;
+            color: white;
+        }
+
+        .input-box button {
+            padding: 12px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            color: white;
+            background: #2563eb;
+            font-size: 16px;
+        }
+
+        #recordBtn { background: #ff5757; }
+
+        a { text-decoration: none; color: inherit; }
+    </style>
+</head>
+<body>
+
+<div class="sidebar">
+    <!-- Floating shapes -->
+    <div class="floating-shape shape1"></div>
+    <div class="floating-shape shape2"></div>
+
+    <div class="logo-container">
+        <img src="{% static 'images/ksitm_logo.png' %}" alt="School Logo">
+    </div>
+
+    {% for u in users %}
+    <a href="{% url 'chat' u.id %}">
+        <div class="user">{{ u.username }}</div>
+    </a>
+    {% endfor %}
+</div>
+
+<div class="chat-area">
+    <div class="messages" id="messages">
+        {% for m in messages %}
+        <div class="msg {% if m.sender == request.user %}me{% endif %}">
+            {% if m.audio %}
+                <audio controls src="{{ m.audio.url }}"></audio>
+            {% elif m.attachment %}
+                <a href="{{ m.attachment.url }}" download>{{ m.attachment.name }}</a>
+            {% else %}
+                <div class="bubble">{{ m.content }}</div>
+            {% endif %}
+        </div>
+        {% endfor %}
+    </div>
+
+    <input type="file" id="fileInput" style="display:none;">
+    
+    <div class="input-box">
+        <button id="recordBtn">🎤</button>
+        <button onclick="document.getElementById('fileInput').click()">📎</button>
+        <input type="text" id="messageInput" placeholder="Type message...">
+        <button id="sendBtn">Send</button>
+    </div>
+</div>
+
+<script>
+    const ws = new WebSocket(`ws://${window.location.host}/ws/chat/{{ other_user.id }}/`);
+    const messagesDiv = document.getElementById("messages");
+
+    ws.onmessage = (e)=> {
+        let data = JSON.parse(e.data);
+        const msgDiv = document.createElement('div');
+        msgDiv.classList.add('msg');
+        if(data.sender_id == "{{ request.user.id }}") msgDiv.classList.add("me");
+
+        if(data.audio){
+            msgDiv.innerHTML = `<audio controls src="${data.audio}"></audio>`;
+        } else if(data.attachment){
+            msgDiv.innerHTML = `<a href="${data.attachment}" download>${data.filename}</a>`;
+        } else {
+            msgDiv.innerHTML = `<div class='bubble'>${data.message}</div>`;
+        }
+
+        messagesDiv.appendChild(msgDiv);
+        messagesDiv.scrollTop = messagesDiv.scrollHeight;
+    };
+
+    document.getElementById("sendBtn").onclick = sendMessage;
+    function sendMessage(){
+        const messageInput = document.getElementById("messageInput");
+        if(messageInput.value.trim() === "") return;
+        ws.send(JSON.stringify({message: messageInput.value}));
+        messageInput.value='';
+    }
+
+    // 🎤 Voice Recording
+    let recorder, audioChunks = [];
+    document.getElementById("recordBtn").onclick = async ()=>{
+        if(!recorder){
+            const stream = await navigator.mediaDevices.getUserMedia({audio:true});
+            recorder = new MediaRecorder(stream);
+            recorder.ondataavailable = e => audioChunks.push(e.data);
+            recorder.onstop = ()=>{
+                let blob = new Blob(audioChunks, {type:"audio/webm"});
+                let reader = new FileReader();
+                reader.onloadend = ()=> ws.send(JSON.stringify({audio: reader.result}));
+                reader.readAsDataURL(blob);
+                audioChunks = [];
+            };
+            recorder.start();
+            alert("🎙 Recording... Press again to stop");
+        } else {
+            recorder.stop();
+            recorder = null;
+        }
+    }
+
+    // 📎 File Upload
+    document.getElementById("fileInput").onchange = (e)=>{
+        const file = e.target.files[0];
+        ws.send(JSON.stringify({filename:file.name}));
+        alert("✅ File name sent (actual upload handled separately)");
+    };
+</script>
+
+</body>
+</html>

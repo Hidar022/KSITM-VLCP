@@ -1,0 +1,55 @@
+{% extends 'main/base.html' %}
+{% block content %}
+<div class="container mt-4">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h1>Reports</h1>
+    <div>
+      <a class="btn btn-outline-secondary" href="{% url 'export_report' 'students' %}">Download students (CSV)</a>
+      <a class="btn btn-outline-secondary" href="{% url 'export_report' 'courses' %}">Download courses (CSV)</a>
+    </div>
+  </div>
+
+  <div class="card mb-4">
+    <div class="card-header">Students per Department</div>
+    <div class="card-body">
+      <canvas id="studentsDeptChart" width="400" height="200"></canvas>
+    </div>
+  </div>
+</div>
+
+<!-- Chart.js CDN -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+  // Ensure labels/data always become valid JS arrays even when context is missing
+  const labels = {{ labels_json|default:"[]"|safe }};
+  const data = {{ data_json|default:"[]"|safe }};
+
+  const ctx = document.getElementById('studentsDeptChart').getContext('2d');
+
+  if (Array.isArray(labels) && labels.length > 0 && Array.isArray(data) && data.length > 0) {
+    new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: labels,
+        datasets: [{
+          label: 'Students',
+          data: data,
+          backgroundColor: 'rgba(54, 162, 235, 0.6)',
+          borderColor: 'rgba(54, 162, 235, 1)',
+          borderWidth: 1
+        }]
+      },
+      options: {
+        responsive: true,
+        scales: {
+          y: { beginAtZero: true, ticks: { precision:0 } }
+        }
+      }
+    });
+  } else {
+    // Friendly fallback when no data
+    const parent = document.getElementById('studentsDeptChart').parentElement;
+    parent.innerHTML = '<p class="text-muted">No student data available to display.</p>';
+  }
+</script>
+{% endblock %}

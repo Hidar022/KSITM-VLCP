@@ -1,0 +1,49 @@
+{% extends 'main/base.html' %}
+{% load static %}
+
+{% block title %}Home - KSITM VLCP{% endblock %}
+
+{% block hero %}
+<section class="container py-5">
+    <div class="row align-items-center">
+        <div class="col-md-6 text-center text-md-start" data-aos="fade-up">
+            <h1 class="fw-bold mb-3 text-white">Empowering <span class="text-warning">Learning</span> & Collaboration</h1>
+            <p class="lead text-light">Connect, learn, share knowledge, and grow together — anywhere, anytime.</p>
+            <a href="/register" class="btn btn-warning btn-lg mt-3 w-100 w-md-auto animate__animated animate__pulse animate__infinite">Get Started</a>
+        </div>
+        <div class="col-md-6 text-center mt-4 mt-md-0" data-aos="zoom-in">
+            <img src="{% static 'images/hero_students.png' %}" class="img-fluid rounded-4 shadow-lg" alt="Learning">
+        </div>
+    </div>
+</section>
+{% endblock hero %}
+
+{% block content %}
+<!-- Features Section -->
+<section class="container py-5">
+    <h2 class="text-center fw-bold mb-5" data-aos="fade-up">Why Choose KSITM VLCP?</h2>
+    <div class="row g-4">
+        <div class="col-md-4" data-aos="zoom-in">
+            <div class="card border-0 shadow-sm hover-card p-3 bg-dark text-white">
+                <img src="{% static 'images/icon_learning.png' %}" class="mx-auto d-block" style="height:80px;">
+                <h5 class="text-center fw-bold mt-3">Modern E-Learning</h5>
+                <p class="text-center">Access course materials, lectures, and live sessions.</p>
+            </div>
+        </div>
+        <div class="col-md-4" data-aos="zoom-in" data-aos-delay="150">
+            <div class="card border-0 shadow-sm hover-card p-3 bg-dark text-white">
+                <img src="{% static 'images/icon_chat.png' %}" class="mx-auto d-block" style="height:80px;">
+                <h5 class="text-center fw-bold mt-3">Collaboration Tools</h5>
+                <p class="text-center">Discuss ideas, ask questions, and solve problems together.</p>
+            </div>
+        </div>
+        <div class="col-md-4" data-aos="zoom-in" data-aos-delay="300">
+            <div class="card border-0 shadow-sm hover-card p-3 bg-dark text-white">
+                <img src="{% static 'images/icon_cert.png' %}" class="mx-auto d-block" style="height:80px;">
+                <h5 class="text-center fw-bold mt-3">Certified Programs</h5>
+                <p class="text-center">Study approved NID programs recognized nationwide.</p>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock content %}

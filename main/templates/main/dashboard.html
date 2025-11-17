@@ -1,0 +1,12 @@
+{% extends 'main/base.html' %}
+
+{% block content %}
+<div class="container py-5">
+  <h2>Welcome, {{ request.user.first_name }} 👋</h2>
+  <p>Your Role: {{ request.user.profile.role }}</p>
+  <form method="post" action="{% url 'site_logout' %}" style="display:inline;">
+    {% csrf_token %}
+    <button class="btn btn-danger" type="submit">Logout</button>
+  </form>
+</div>
+{% endblock %}

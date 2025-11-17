@@ -1,0 +1,31 @@
+{% extends 'main/base.html' %}
+{% block title %}Registered Lecturers{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <h1 class="text-center mb-4">Registered Lecturers</h1>
+
+    {% if lecturers %}
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Username</th>
+                <th>Email</th>
+                <th>Lecturer ID</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for lecturer in lecturers %}
+            <tr>
+                <td>{{ lecturer.user.username }}</td>
+                <td>{{ lecturer.user.email }}</td>
+                <td>{{ lecturer.lecturer_id }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p class="text-center">No lecturers registered yet.</p>
+    {% endif %}
+</div>
+{% endblock %}

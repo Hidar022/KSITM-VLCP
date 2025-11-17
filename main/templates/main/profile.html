@@ -1,0 +1,8 @@
+{% extends 'main/base.html' %}
+{% block content %}
+<div class="container py-5">
+    <h2>Profile Page</h2>
+    <p>Name: {{ request.user.username }}</p>
+    <p>Email: {{ request.user.email }}</p>
+</div>
+{% endblock %}

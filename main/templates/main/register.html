@@ -1,0 +1,51 @@
+{% extends 'main/base.html' %}
+{% load static %}
+{% load widget_tweaks %}
+
+{% block content %}
+{% with hide_footer=True %}
+<link rel="stylesheet" href="{% static 'css/auth.css' %}">
+<link href="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.css" rel="stylesheet">
+
+<div class="auth-container">
+
+    <!-- Floating shapes -->
+    <div class="floating-shape" style="width:150px;height:150px;background:#2563eb;top:50px;left:50px;" data-aos="fade-down" data-aos-duration="2000"></div>
+    <div class="floating-shape" style="width:100px;height:100px;background:#4f46e5;bottom:80px;right:40px;" data-aos="fade-up" data-aos-duration="2000"></div>
+
+    <!-- Auth box -->
+    <div class="auth-box" data-aos="zoom-in">
+        <div class="logo-circle">
+            <img src="{% static 'images/ksitm_logo.png' %}" alt="KSITM Logo">
+        </div>
+
+        <h3 class="text-white mb-3">Create Account</h3>
+
+        <form method="POST">
+            {% csrf_token %}
+            <label>Username</label>
+            {{ form.username|add_class:"form-control" }}
+            <label>Email</label>
+            {{ form.email|add_class:"form-control" }}
+            <label>Department</label>
+            {{ form.department|add_class:"form-control" }}
+            <label>Register As</label>
+            {{ form.role|add_class:"form-control" }}
+            <label>Password</label>
+            {{ form.password1|add_class:"form-control" }}
+            <label>Confirm Password</label>
+            {{ form.password2|add_class:"form-control" }}
+            <button class="submit-btn">Register</button>
+        </form>
+
+        <p class="text-link">Already have an account? <a href="{% url 'login' %}">Login</a></p>
+    </div>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.js"></script>
+<script>
+  AOS.init({ duration: 800, easing: 'ease-in-out', once: false });
+</script>
+{% endwith %}
+{% endblock %}
