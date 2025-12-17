@@ -2,21 +2,18 @@
 {% load static %}
 {% load widget_tweaks %}
 
-{% block content %}
 {% with hide_footer=True %}
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/auth.css' %}">
 {% endblock %}
 
-<link href="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.css" rel="stylesheet">
+{% block page_wrapper %}
 
 <div class="auth-container">
 
-    <!-- Floating shapes -->
-    <div class="floating-shape shape1" data-aos="fade-down" data-aos-duration="2000"></div>
-    <div class="floating-shape shape2" data-aos="fade-up" data-aos-duration="2000"></div>
+    <div class="floating-shape shape1"></div>
+    <div class="floating-shape shape2"></div>
 
-    <!-- Auth box -->
     <div class="auth-box" data-aos="zoom-in">
         <div class="logo-circle">
             <img src="{% static 'images/ksitm_logo.png' %}" alt="KSITM Logo">
@@ -24,26 +21,14 @@
 
         <h3 class="text-white mb-4">Login</h3>
 
-        <!-- ROLE TABS -->
         <div class="role-tab-container">
             <div id="tab-student" class="role-tab active-role" onclick="switchRole('student')">Student</div>
             <div id="tab-lecturer" class="role-tab" onclick="switchRole('lecturer')">Lecturer</div>
             <div id="tab-admin" class="role-tab" onclick="switchRole('admin')">Admin</div>
         </div>
 
-        <!-- Display backend errors -->
-        {% if form.errors %}
-            {% for field, errors in form.errors.items %}
-                {% for error in errors %}
-                    <div class="error" style="color:#ff8080; margin-bottom:8px;">{{ error }}</div>
-                {% endfor %}
-            {% endfor %}
-        {% endif %}
-
-        <!-- FORM -->
         <form method="POST">
             {% csrf_token %}
-
             <input type="hidden" name="role" id="roleInput" value="student">
 
             <label>Username</label>
@@ -52,46 +37,39 @@
             <label>Password</label>
             {{ form.password|add_class:"form-control" }}
 
-            <!-- LECTURER ID FIELD -->
             <div id="lecturer-id-box">
                 <label>Lecturer ID</label>
                 {{ form.lecturer_id|add_class:"form-control" }}
             </div>
 
-            <button class="submit-btn">Login</button>
+            <button type="submit" class="submit-btn">Login</button>
         </form>
 
         <p id="registerBox" class="text-link">
             Don't have an account? <a href="{% url 'register' %}">Register</a>
         </p>
-
     </div>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.js"></script>
-
 <script>
-  AOS.init({ duration: 800, easing: 'ease-in-out', once: false });
+    function switchRole(role) {
+        document.getElementById("roleInput").value = role;
 
-  let initialRole = "{% if form.data.role %}{{ form.data.role }}{% else %}student{% endif %}";
-  
-  window.onload = function() {
-      switchRole(initialRole);
-  }
+        document.querySelectorAll(".role-tab")
+            .forEach(t => t.classList.remove("active-role"));
 
-  function switchRole(role) {
-      document.getElementById("roleInput").value = role;
+        document.getElementById("tab-" + role)
+            .classList.add("active-role");
 
-      document.querySelectorAll(".role-tab").forEach(t => t.classList.remove("active-role"));
-      document.getElementById("tab-" + role).classList.add("active-role");
+        document.getElementById("lecturer-id-box").style.display =
+            role === "lecturer" ? "block" : "none";
 
-      document.getElementById("lecturer-id-box").style.display =
-          role === "lecturer" ? "block" : "none";
+        document.getElementById("registerBox").style.display =
+            role === "student" ? "block" : "none";
+    }
 
-      document.getElementById("registerBox").style.display =
-          role === "student" ? "block" : "none";
-  }
+    window.onload = () => switchRole("student");
 </script>
 
-{% endwith %}
 {% endblock %}
+{% endwith %}

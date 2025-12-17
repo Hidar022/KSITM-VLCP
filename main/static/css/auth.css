@@ -1,8 +1,7 @@
-/* ===========================
-   Auth Pages Styles with Particles
+/* =========================
+   Auth Pages Shared Styles
 =========================== */
 
-/* Body & background */
 body {
     background: #0f172a;
     font-family: 'Poppins', sans-serif;
@@ -21,31 +20,32 @@ body {
 }
 
 .shape1 {
-    width:150px;
-    height:150px;
-    background:#2563eb;
-    top:50px;
-    left:50px;
+    width: 150px;
+    height: 150px;
+    background: #2563eb;
+    top: 50px;
+    left: 50px;
+    animation: floatShape1 6s ease-in-out infinite alternate;
 }
 
 .shape2 {
-    width:100px;
-    height:100px;
-    background:#4f46e5;
-    bottom:80px;
-    right:40px;
+    width: 100px;
+    height: 100px;
+    background: #4f46e5;
+    bottom: 80px;
+    right: 40px;
+    animation: floatShape2 8s ease-in-out infinite alternate;
 }
 
 /* Auth container */
 .auth-container {
     min-height: 100vh;
+    padding-top: 120px; /* FIX for fixed navbar */
     display: flex;
-    justify-content: center;
     align-items: center;
-    padding: 20px;
-    position: relative;
-    z-index: 2;
+    justify-content: center;
 }
+
 
 /* Auth box */
 .auth-box {
@@ -58,7 +58,8 @@ body {
     border: 1px solid rgba(255,255,255,0.15);
     text-align: center;
     position: relative;
-    transition: all 0.3s ease;
+    transition: 0.3s ease;
+    z-index: 5;
 }
 
 .auth-box:hover {
@@ -76,15 +77,15 @@ body {
     justify-content: center;
     align-items: center;
     background: rgba(255,255,255,0.10);
-    animation: floatLogo 3s ease-in-out infinite;
+    animation: floatLogo 3s ease-in-out infinite, rotateLogo 6s linear infinite;
     margin: 0 auto 20px auto;
 }
 
 .logo-circle img {
     width: 100%;
     height: 100%;
-    border-radius: 50%;
     object-fit: cover;
+    border-radius: 50%;
 }
 
 @keyframes floatLogo {
@@ -93,12 +94,18 @@ body {
     100% { transform: translateY(0); }
 }
 
-/* Form elements */
+@keyframes rotateLogo {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Form inputs */
 label {
     color: white;
     font-weight: 500;
-    margin-top: 10px;
+    margin-top: 12px;
     display: block;
+    text-align: left;
 }
 
 .form-control {
@@ -111,7 +118,11 @@ label {
     margin-bottom: 10px;
 }
 
-/* Buttons */
+.form-control:focus {
+    outline: 2px solid #2563eb;
+}
+
+/* Submit Button */
 .submit-btn {
     width: 100%;
     background: #2563eb;
@@ -122,7 +133,7 @@ label {
     margin-top: 15px;
     font-weight: 600;
     cursor: pointer;
-    transition: all 0.3s ease;
+    transition: 0.3s ease;
 }
 
 .submit-btn:hover {
@@ -130,68 +141,71 @@ label {
     box-shadow: 0 0 12px rgba(37,99,235,0.6);
 }
 
-/* Links */
-.text-link {
-    text-align: center;
-    margin-top: 15px;
-    color: white;
+/* Messages */
+.text-error {
+    color: #f87171;
+    font-weight: 600;
 }
 
-.text-link a {
-    color: #38bdf8;
-    font-weight: bold;
-    text-decoration: none;
+.text-success {
+    color: #4ade80;
+    font-weight: 600;
 }
 
-.text-link a:hover {
-    text-decoration: underline;
-}
-
-/* Role tabs */
+/* =========================
+   Role Tabs Styling
+=========================== */
 .role-tab-container {
-    display: flex;
-    justify-content: space-between;
+    display: flex !important;
+    justify-content: center;
+    gap: 12px;
     margin-bottom: 20px;
 }
 
 .role-tab {
-    width: 33%;
-    text-align: center;
-    padding: 10px;
-    background: rgba(255,255,255,0.1);
-    border-radius: 6px;
+    padding: 10px 22px;
+    border-radius: 8px;
+    background: #2c3e60;
+    color: white;
     cursor: pointer;
     font-weight: 600;
-    transition: 0.3s;
+    transition: all 0.3s ease;
 }
 
 .role-tab:hover {
-    background: rgba(255,255,255,0.2);
+    background: #3b82f6;
 }
 
 .active-role {
     background: #2563eb;
-    color: white;
-    box-shadow: 0 0 10px rgba(37,99,235,0.6);
+    box-shadow: 0 0 12px rgba(37,99,235,0.6);
 }
 
-/* Lecturer ID Box */
-#lecturer-id-box {
-    display: none;
-    z-index: 10 !important;
-    position: relative !important;
+
+/* Lecturer ID box hidden by default */
+#lecturer-id-box { display: none; }
+
+/* Register link */
+.text-link a { color: #F58634; text-decoration: none; }
+.text-link a:hover { text-decoration: underline; }
+
+/* Floating shapes animations */
+@keyframes floatShape1 {
+    0% { transform: translateY(0) translateX(0); }
+    50% { transform: translateY(-20px) translateX(10px); }
+    100% { transform: translateY(0) translateX(0); }
 }
 
-#lecturer-id-box input {
-    background: rgba(255,255,255,0.25) !important;
-    color: white !important;
-    border-radius: 6px !important;
-    padding: 10px !important;
-    border: 1px solid rgba(255,255,255,0.3) !important;
+@keyframes floatShape2 {
+    0% { transform: translateY(0) translateX(0); }
+    50% { transform: translateY(-15px) translateX(-10px); }
+    100% { transform: translateY(0) translateX(0); }
 }
 
 /* Responsive */
 @media (max-width: 500px) {
     .auth-box { padding: 30px; }
     .logo-circle { width: 90px; height: 90px; }
+    .role-tab-container { flex-direction: column; }
+    .role-tab { margin-bottom: 10px; }
 }

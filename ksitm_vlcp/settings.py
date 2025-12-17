@@ -29,6 +29,7 @@ ALLOWED_HOSTS = []
 # INSTALLED APPS
 # ------------------------------
 INSTALLED_APPS = [
+    'daphne',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -42,7 +43,15 @@ INSTALLED_APPS = [
     # Third-party
     'widget_tweaks',
     'channels',
+    
 ]
+
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels.layers.InMemoryChannelLayer"
+    }
+}
+   
 
 # ------------------------------
 # MIDDLEWARE

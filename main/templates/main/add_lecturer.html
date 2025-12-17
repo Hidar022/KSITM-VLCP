@@ -4,148 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <title>Add Lecturer</title>
-    <style>
-        /* ===========================
-           Global Styles
-        ============================ */
-        body {
-            background: #0f172a;
-            font-family: 'Poppins', sans-serif;
-            color: white;
-            margin: 0;
-            padding: 0;
-            overflow-x: hidden;
-            position: relative;
-        }
-
-        /* Floating shapes */
-        .floating-shape {
-            position: absolute;
-            border-radius: 50%;
-            z-index: 1;
-        }
-        .shape1 { width:120px; height:120px; background:#2563eb; top:20px; left:10px; }
-        .shape2 { width:80px; height:80px; background:#4f46e5; bottom:40px; right:15px; }
-
-        /* Auth container */
-        .auth-container {
-            min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 15px;
-            position: relative;
-            z-index: 2;
-        }
-
-        /* Auth box */
-        .auth-box {
-            background: rgba(37,99,235,0.15);
-            backdrop-filter: blur(12px);
-            border-radius: 14px;
-            padding: 25px 20px;
-            width: 100%;
-            max-width: 360px;
-            border: 1px solid rgba(255,255,255,0.15);
-            text-align: center;
-            position: relative;
-            transition: all 0.3s ease;
-        }
-        .auth-box:hover {
-            transform: translateY(-4px) scale(1.02);
-            box-shadow: 0 8px 15px rgba(37,99,235,0.4);
-        }
-
-        /* Logo circle */
-        .logo-circle {
-            width: 85px;
-            height: 85px;
-            border-radius: 50%;
-            border: 3px solid rgba(255,255,255,0.4);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            background: rgba(255,255,255,0.10);
-            animation: floatLogo 3s ease-in-out infinite;
-            margin: 0 auto 15px auto;
-        }
-        .logo-circle img {
-            width: 100%;
-            height: 100%;
-            border-radius: 50%;
-            object-fit: cover;
-        }
-        @keyframes floatLogo {
-            0% { transform: translateY(0); }
-            50% { transform: translateY(-8px); }
-            100% { transform: translateY(0); }
-        }
-
-        /* Messages */
-        .text-error { color: #ff5757; font-weight: 600; }
-        .text-success { color: #38bdf8; font-weight: 600; }
-
-        /* Form elements */
-        label {
-            color: white;
-            font-weight: 500;
-            margin-top: 8px;
-            display: block;
-            font-size: 14px;
-        }
-        .form-control {
-            background: rgba(255,255,255,0.12);
-            border: none;
-            color: white;
-            border-radius: 6px;
-            padding: 8px;
-            width: 100%;
-            margin-bottom: 10px;
-            font-size: 14px;
-        }
-
-        /* Buttons */
-        .submit-btn {
-            width: 100%;
-            background: #2563eb;
-            border: none;
-            padding: 10px;
-            color: white;
-            border-radius: 6px;
-            margin-top: 12px;
-            font-weight: 600;
-            font-size: 14px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-        .submit-btn:hover {
-            background: linear-gradient(90deg, #2563eb, #4f46e5);
-            box-shadow: 0 0 10px rgba(37,99,235,0.6);
-        }
-
-        /* Responsive adjustments */
-        @media (max-width: 400px) {
-            .auth-box {
-                padding: 20px 15px;
-                max-width: 90%;
-            }
-            .logo-circle {
-                width: 70px;
-                height: 70px;
-            }
-            label, .form-control, .submit-btn {
-                font-size: 13px;
-            }
-            .floating-shape.shape1 { width: 80px; height: 80px; top: 10px; left: -10px; }
-            .floating-shape.shape2 { width: 60px; height: 60px; bottom: 20px; right: -5px; }
-        }
-
-        @media (max-width: 320px) {
-            .logo-circle { width: 60px; height: 60px; }
-            label, .form-control, .submit-btn { font-size: 12px; }
-            .auth-box { padding: 15px 10px; }
-        }
-    </style>
+    <link rel="stylesheet" href="{% static 'css/auth.css' %}">
 </head>
 <body>
 
@@ -155,11 +14,13 @@
 
 <div class="auth-container">
     <div class="auth-box">
+
+        <!-- Logo -->
         <div class="logo-circle">
             <img src="{% static 'images/ksitm_logo.png' %}" alt="School Logo">
         </div>
 
-        <h2 style="margin-bottom:15px; font-size:18px;">Add New Lecturer</h2>
+        <h2 style="margin-bottom:15px; font-size:20px; font-weight:600;">Add New Lecturer</h2>
 
         <!-- Django Messages -->
         {% if messages %}
@@ -188,6 +49,7 @@
 
             <button type="submit" class="submit-btn">Create Lecturer</button>
         </form>
+
     </div>
 </div>
 

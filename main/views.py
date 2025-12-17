@@ -13,6 +13,9 @@ import csv, json
 from .models import Profile, Course, Result, Assignment, Submission, ChatMessage, Message
 from .forms import RegisterForm, RoleLoginForm
 from .forms_uploads import CourseMaterialForm, AssignmentForm, StudentForm
+from django.db.models import Q
+from datetime import datetime
+
 
 # ===================== AUTHENTICATION ===================== #
 
@@ -253,41 +256,15 @@ def create_assignment(request):
 
 @login_required
 def lecturer_chat_view(request):
-    if request.user.profile.role != "lecturer":
-        return redirect("dashboard")
+    # Lecturer sees only students
+    users = User.objects.filter(profile__role="student")
 
-    students = Profile.objects.filter(role="student")
-    selected_student = None
-    chats = ChatMessage.objects.none()
-
-    student_id = request.GET.get("student")
-    if student_id:
-        selected_student = get_object_or_404(Profile, id=student_id, role="student")
-        chats = ChatMessage.objects.filter(
-            lecturer=request.user.profile,
-            student=selected_student
-        )
-
-    if request.method == "POST" and selected_student:
-        text = request.POST.get("text")
-        file = request.FILES.get("file")
-        voice_note = request.FILES.get("voice_note")
-
-        ChatMessage.objects.create(
-            sender="lecturer",
-            lecturer=request.user.profile,
-            student=selected_student,
-            text=text,
-            file=file,
-            voice_note=voice_note
-        )
-        return redirect(f"?student={selected_student.id}")
-
-    return render(request, "main/lecturer_chat.html", {
-        "students": students,
-        "selected_student": selected_student,
-        "messages": chats,
+    return render(request, "main/chat.html", {
+        "users": users,
+        "other_user": None,
+        "messages": []
     })
+
 
 
 # ===================== STUDENT FUNCTIONS ===================== #
@@ -347,11 +324,19 @@ def course_detail(request, course_id):
         "assignments": assignments
     })
 
-
 @login_required
 def chat_view(request, user_id):
     other_user = get_object_or_404(User, id=user_id)
-    users = User.objects.exclude(id=request.user.id)
+
+    # Filter contacts based on roles
+    if request.user.profile.role == "student":
+        users = User.objects.filter(profile__role="lecturer")
+    elif request.user.profile.role == "lecturer":
+        users = User.objects.filter(profile__role="student")
+    else:
+        users = User.objects.none()
+
+    # Load chat messages between both users
     chats = Message.objects.filter(
         sender__in=[request.user, other_user],
         receiver__in=[request.user, other_user]
@@ -370,13 +355,14 @@ def chat_view(request, user_id):
                 audio=audio,
                 attachment=attachment
             )
-            return redirect(f"?user_id={other_user.id}")
+            return redirect("chat_view", user_id=other_user.id)
 
     return render(request, "main/chat.html", {
         "users": users,
         "other_user": other_user,
         "messages": chats
     })
+
 
 
 @login_required
@@ -465,8 +451,6 @@ def add_lecturer_view(request):
             return redirect('add_lecturer')
 
     return render(request, 'main/add_lecturer.html')
-
-
 
 
 @login_required

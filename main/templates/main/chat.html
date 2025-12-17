@@ -1,248 +1,150 @@
 {% load static %}
-<!DOCTYPE html>
-<html>
+<!doctype html>
+<html lang="en">
 <head>
-    <title>Chat</title>
-    <link rel="stylesheet" href="{% static 'dashboard.css' %}">
-    <style>
-        /* Chat-specific styles overriding dashboard.css where needed */
-        body { display: flex; height: 100vh; margin: 0; background: #0f172a; }
+  <meta charset="utf-8" />
+  <title>KSITM • Chat — {{ other_user.username }}</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
 
-        /* Sidebar */
-        .sidebar {
-            width: 25%;
-            background: rgba(15,23,42,0.85); /* dark but slightly transparent */
-            border-right: 1px solid rgba(255,255,255,0.1);
-            overflow-y: auto;
-            padding-top: 20px;
-            position: relative;
-        }
+  <!-- Tailwind (dev) + AOS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://unpkg.com/aos@2.3.4/dist/aos.css" rel="stylesheet" />
+  <script src="https://unpkg.com/aos@2.3.4/dist/aos.js"></script>
 
-        /* Floating shapes in sidebar */
-        .sidebar .floating-shape {
-            position: absolute;
-            border-radius: 50%;
-            opacity: 0.08;
-            animation: float 20s linear infinite;
-        }
-
-        .shape1 { width: 80px; height: 80px; background: #2563eb; top: 40px; left: 20px; }
-        .shape2 { width: 60px; height: 60px; background: #4f46e5; bottom: 50px; right: 30px; }
-
-        @keyframes float {
-            0% { transform: translateY(0) translateX(0); }
-            50% { transform: translateY(-20px) translateX(15px); }
-            100% { transform: translateY(0) translateX(0); }
-        }
-
-        /* Logo */
-        .logo-container {
-            text-align: center;
-            margin-bottom: 20px;
-            position: relative;
-            z-index: 2;
-        }
-
-        .logo-container img {
-            width: 80px;
-            height: 80px;
-            border-radius: 50%;
-            border: 2px solid rgba(255,255,255,0.3);
-            animation: rotate 6s linear infinite;
-        }
-
-        @keyframes rotate {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
-        /* Users list */
-        .user {
-            padding: 12px 20px;
-            border-bottom: 1px solid rgba(255,255,255,0.1);
-            cursor: pointer;
-            color: #f0f0f0;
-            font-weight: 500;
-            transition: all 0.3s;
-            text-shadow: 0 0 3px rgba(0,0,0,0.7);
-        }
-
-        .user:hover {
-            background: rgba(37, 99, 235, 0.6);
-            color: white;
-            box-shadow: 0 0 8px rgba(37,99,235,0.6);
-        }
-
-        /* Chat area */
-        .chat-area {
-            width: 75%;
-            display: flex;
-            flex-direction: column;
-            background: #0f172a;
-            position: relative;
-        }
-
-        /* Messages */
-        .messages {
-            flex: 1;
-            padding: 15px;
-            overflow-y: auto;
-        }
-
-        .msg {
-            margin-bottom: 12px;
-            display: flex;
-        }
-
-        .me { justify-content: flex-end; }
-
-        .bubble {
-            padding: 10px;
-            border-radius: 10px;
-            display: inline-block;
-            background: rgba(255,255,255,0.1);
-            color: white;
-            max-width: 70%;
-            word-wrap: break-word;
-        }
-
-        .me .bubble { background: #2563eb; color: white; }
-
-        /* Input box */
-        .input-box {
-            display: flex;
-            border-top: 1px solid rgba(255,255,255,0.1);
-            padding: 10px;
-            gap: 10px;
-            background: #111827;
-        }
-
-        .input-box input {
-            flex: 1;
-            padding: 12px;
-            border-radius: 6px;
-            border: 1px solid rgba(255,255,255,0.2);
-            background: #1e293b;
-            color: white;
-        }
-
-        .input-box button {
-            padding: 12px;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-            color: white;
-            background: #2563eb;
-            font-size: 16px;
-        }
-
-        #recordBtn { background: #ff5757; }
-
-        a { text-decoration: none; color: inherit; }
-    </style>
+  <!-- Custom style -->
+  <link rel="stylesheet" href="{% static 'css/chat.css' %}">
 </head>
-<body>
 
-<div class="sidebar">
-    <!-- Floating shapes -->
-    <div class="floating-shape shape1"></div>
-    <div class="floating-shape shape2"></div>
+<body class="bg-ksitm-dark text-ksitm-txt antialiased">
+  <!-- Floating decorative shapes behind everything -->
+  <div class="floating-shape shape1" aria-hidden="true"></div>
+  <div class="floating-shape shape2" aria-hidden="true"></div>
 
-    <div class="logo-container">
-        <img src="{% static 'images/ksitm_logo.png' %}" alt="School Logo">
-    </div>
-
-    {% for u in users %}
-    <a href="{% url 'chat' u.id %}">
-        <div class="user">{{ u.username }}</div>
-    </a>
-    {% endfor %}
-</div>
-
-<div class="chat-area">
-    <div class="messages" id="messages">
-        {% for m in messages %}
-        <div class="msg {% if m.sender == request.user %}me{% endif %}">
-            {% if m.audio %}
-                <audio controls src="{{ m.audio.url }}"></audio>
-            {% elif m.attachment %}
-                <a href="{{ m.attachment.url }}" download>{{ m.attachment.name }}</a>
-            {% else %}
-                <div class="bubble">{{ m.content }}</div>
-            {% endif %}
+  <div class="min-h-screen flex flex-col lg:flex-row p-4 gap-4">
+    <!-- Sidebar -->
+    <aside class="w-full lg:w-80 rounded-2xl p-5 relative overflow-hidden z-10" data-aos="fade-right" aria-label="Contacts">
+      <div class="flex items-center gap-3 mb-4">
+        <img src="{% static 'images/ksitm_logo.png' %}" class="w-12 h-12 rounded-lg border border-white-20" alt="KSITM logo">
+        <div>
+          <div class="text-white font-bold">KSITM • VLCP</div>
+          <div class="text-sm text-slate-300">Course portal chat</div>
         </div>
+      </div>
+
+      <div class="mb-3">
+        <label for="searchUsers" class="sr-only">Search users</label>
+        <input id="searchUsers" name="searchUsers" aria-label="Search users" placeholder="Search users..." class="search-input" />
+      </div>
+
+      <nav id="usersList" class="space-y-2 max-h-[60vh] overflow-auto pr-2" role="navigation" aria-label="Users list">
+        {% for u in users %}
+          <a href="{% url 'chat' u.id %}" class="user-entry {% if other_user and other_user.id == u.id %}user-active{% endif %}">
+            <div class="user-avatar">{{ u.username|slice:":1"|upper }}</div>
+            <div class="flex-1">
+              <div class="text-white font-semibold">{{ u.username }}</div>
+              <div class="text-xs text-slate-400">Last active • {{ u.last_login|default:"-" }}</div>
+            </div>
+          </a>
+        {% empty %}
+          <div class="text-slate-400 p-2">No users found</div>
         {% endfor %}
-    </div>
+      </nav>
+    </aside>
 
-    <input type="file" id="fileInput" style="display:none;">
-    
-    <div class="input-box">
-        <button id="recordBtn">🎤</button>
-        <button onclick="document.getElementById('fileInput').click()">📎</button>
-        <input type="text" id="messageInput" placeholder="Type message...">
-        <button id="sendBtn">Send</button>
-    </div>
-</div>
+    <!-- Chat panel -->
+    <main class="flex-1 rounded-2xl panel-bg p-4 flex flex-col shadow-xl z-20" data-aos="fade-left" role="main" aria-label="Chat panel">
+      <!-- Header -->
+      <header class="flex items-center justify-between pb-3 border-b border-white-06">
+        <div class="flex items-center gap-3">
+          <div class="header-avatar">{{ other_user.username|slice:":1"|upper }}</div>
+          <div>
+            <div class="text-white font-bold">{{ other_user.username }}</div>
+            <div class="text-sm text-slate-400">Role: {{ other_user.profile.role|default:"user" }}</div>
+          </div>
+        </div>
 
-<script>
-    const ws = new WebSocket(`ws://${window.location.host}/ws/chat/{{ other_user.id }}/`);
-    const messagesDiv = document.getElementById("messages");
+        <div class="flex items-center gap-2">
+          <button id="startAudioCall" class="btn-ghost" title="Start voice call" aria-label="Start voice call">🔊</button>
+          <button id="startVideoCall" class="btn-ghost" title="Start video call" aria-label="Start video call">🎥</button>
+          <button id="endCallBtn" class="btn-ghost hidden" title="End call" aria-hidden="true">⛔</button>
+        </div>
+      </header>
 
-    ws.onmessage = (e)=> {
-        let data = JSON.parse(e.data);
-        const msgDiv = document.createElement('div');
-        msgDiv.classList.add('msg');
-        if(data.sender_id == "{{ request.user.id }}") msgDiv.classList.add("me");
+      <!-- Messages area -->
+      <section id="messages" class="flex-1 overflow-auto py-4 px-2 space-y-4" aria-live="polite" tabindex="0">
+        {% if messages %}
+          {% for m in messages %}
+            <div class="w-full flex {% if m.sender.id == request.user.id %} justify-end {% else %} justify-start {% endif %}">
+              <article class="message-card {% if m.sender.id == request.user.id %}message-me{% else %}message-other{% endif %}">
+                {% if m.voice_note %}
+                  <audio controls src="{{ m.voice_note.url }}"></audio>
 
-        if(data.audio){
-            msgDiv.innerHTML = `<audio controls src="${data.audio}"></audio>`;
-        } else if(data.attachment){
-            msgDiv.innerHTML = `<a href="${data.attachment}" download>${data.filename}</a>`;
-        } else {
-            msgDiv.innerHTML = `<div class='bubble'>${data.message}</div>`;
-        }
+                {% elif m.file %}
+                  <a class="attachment" href="{{ m.file.url }}" download>{{ m.file.name }}</a>
 
-        messagesDiv.appendChild(msgDiv);
-        messagesDiv.scrollTop = messagesDiv.scrollHeight;
-    };
+                {% elif m.audio %}
+                  <audio controls src="{{ m.audio.url }}"></audio>
 
-    document.getElementById("sendBtn").onclick = sendMessage;
-    function sendMessage(){
-        const messageInput = document.getElementById("messageInput");
-        if(messageInput.value.trim() === "") return;
-        ws.send(JSON.stringify({message: messageInput.value}));
-        messageInput.value='';
-    }
+                {% elif m.attachment %}
+                  <a class="attachment" href="{{ m.attachment.url }}" download>{{ m.attachment.name }}</a>
 
-    // 🎤 Voice Recording
-    let recorder, audioChunks = [];
-    document.getElementById("recordBtn").onclick = async ()=>{
-        if(!recorder){
-            const stream = await navigator.mediaDevices.getUserMedia({audio:true});
-            recorder = new MediaRecorder(stream);
-            recorder.ondataavailable = e => audioChunks.push(e.data);
-            recorder.onstop = ()=>{
-                let blob = new Blob(audioChunks, {type:"audio/webm"});
-                let reader = new FileReader();
-                reader.onloadend = ()=> ws.send(JSON.stringify({audio: reader.result}));
-                reader.readAsDataURL(blob);
-                audioChunks = [];
-            };
-            recorder.start();
-            alert("🎙 Recording... Press again to stop");
-        } else {
-            recorder.stop();
-            recorder = null;
-        }
-    }
+                {% else %}
+                  <div class="message-text">{{ m.text|default:m.content|linebreaksbr }}</div>
+                {% endif %}
 
-    // 📎 File Upload
-    document.getElementById("fileInput").onchange = (e)=>{
-        const file = e.target.files[0];
-        ws.send(JSON.stringify({filename:file.name}));
-        alert("✅ File name sent (actual upload handled separately)");
-    };
-</script>
+                <div class="message-meta">{{ m.timestamp|date:"M d, H:i" }}</div>
+              </article>
+            </div>
+          {% endfor %}
+        {% else %}
+          <div class="w-full text-center text-slate-400">No messages yet — say hi 👋</div>
+        {% endif %}
+      </section>
 
+      <!-- Input area -->
+      <footer class="mt-3 border-t border-white-06 pt-3 flex items-center gap-3">
+        <div class="flex items-center gap-2">
+          <button id="recordBtn" class="tool-btn">🎙</button>
+
+          <label for="fileInput" class="sr-only">Attach file</label>
+          <input id="fileInput" type="file" class="hidden" />
+
+          <button id="attachBtn" class="tool-btn">📎</button>
+        </div>
+
+        <!-- FIXED TEXTAREA (restored to your design) -->
+        <div class="flex-1">
+          <textarea 
+              id="messageInput"
+              rows="1"
+              name="content"
+              class="message-input w-full bg-[#0f172a] text-white px-4 py-3 rounded-xl border border-white-10 focus:outline-none resize-none"
+              placeholder="Type a message..."
+          ></textarea>
+        </div>
+
+        <div>
+          <button id="sendBtn" class="send-btn">Send</button>
+        </div>
+      </footer>
+    </main>
+  </div>
+
+  <!-- Call box -->
+  <div id="callBox" class="fixed right-6 bottom-6 hidden z-50">
+    <video id="localVideo" autoplay muted playsinline class="local-video"></video>
+    <video id="remoteVideo" autoplay playsinline class="remote-video"></video>
+  </div>
+
+  <!-- Safe JS globals for chat.js -->
+  <script>
+    AOS.init({ once:false, duration:700, easing:'ease-in-out' });
+    const KS_CSRF = "{{ csrf_token }}";
+    const OTHER_USER_ID = "{{ other_user.id|default:'null' }}";
+    const CURRENT_USER_ID = "{{ request.user.id }}";
+    const WS_SCHEME = (location.protocol === 'https:') ? 'wss' : 'ws';
+  </script>
+
+  <script src="{% static 'js/chat.js' %}"></script>
 </body>
 </html>
