@@ -113,20 +113,19 @@ REDIS_URL = os.environ.get("REDIS_URL")
 
 if REDIS_URL:
     redis_url = urlparse(REDIS_URL)
+
     CHANNEL_LAYERS = {
         "default": {
             "BACKEND": "channels_redis.core.RedisChannelLayer",
             "CONFIG": {
-                "hosts": [{
-                    "address": (redis_url.hostname, redis_url.port),
-                    "password": redis_url.password,
-                    "db": 0,
-                }],
+                "hosts": [
+                    f"{redis_url.scheme}://:{redis_url.password}@{redis_url.hostname}:{redis_url.port}/0"
+                ],
             },
         },
     }
 else:
-    # LOCAL DEV FALLBACK
+    # LOCAL DEV (no Redis)
     CHANNEL_LAYERS = {
         "default": {
             "BACKEND": "channels.layers.InMemoryChannelLayer",
