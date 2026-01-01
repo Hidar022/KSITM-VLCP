@@ -35,12 +35,19 @@ class ChatConsumer(AsyncWebsocketConsumer):
         })
 
     async def disconnect(self, close_code):
-        await self.channel_layer.group_discard(self.room_name, self.channel_name)
-        await self.channel_layer.group_send(self.room_name, {
-            "type": "presence",
-            "user_id": self.user.id,
-            "status": "offline",
-        })
+        if hasattr(self, "room_name"):
+            await self.channel_layer.group_discard(
+                self.room_name,
+                self.channel_name
+            )
+
+            await self.channel_layer.group_send(self.room_name, {
+                "type": "presence",
+                "user_id": self.user.id,
+                "status": "offline",
+            })
+
+
 
     async def receive(self, text_data=None, bytes_data=None):
         data = json.loads(text_data or "{}")

@@ -1,0 +1,108 @@
+/* Body & links */
+body {
+    margin: 0;
+    font-family: 'Poppins', sans-serif;
+    background-color: #0f172a;
+    color: #ffffff;
+}
+
+a { text-decoration: none; }
+
+/* Navbar */
+nav.navbar {
+    background: #1e293b !important;
+}
+
+.brand-logo {
+    height: 55px;
+    width: 55px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid rgba(255,255,255,0.4);
+}
+
+.brand-title {
+    color: white !important;
+    font-weight: 700;
+    font-size: 15px;
+    line-height: 1.2;
+    white-space: normal;
+}
+
+.brand-title .highlight {
+    color: #F58634;
+}
+
+.nav-link { color: white !important; }
+.nav-link:hover { color: #F58634 !important; }
+
+/* Logo rotation */
+.animate-rotate {
+    animation: rotateLogo 6s linear infinite;
+}
+
+@keyframes rotateLogo {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Footer */
+footer {
+    background: #1e293b;
+    color: white;
+    padding: 2rem 0;
+}
+
+footer a { color: white; }
+footer a:hover { color: #F58634; }
+
+.footer-logo {
+    height: 60px;
+    width: 60px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.footer-school-name {
+    color: #fff;
+    font-weight: bold;
+}
+
+/* Flash messages spacing */
+.flash-container {
+    margin-top: 90px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 992px) {
+    .brand-title { font-size: 14px; }
+    .brand-logo { height: 45px; width: 45px; }
+    .flash-container { margin-top: 70px; }
+}
+
+@media (max-width: 576px) {
+    .brand-title { font-size: 12px; }
+    .brand-logo { height: 40px; width: 40px; }
+    .flash-container { margin-top: 60px; }
+}
+
+.animate-rotate {
+    animation: rotateLogo 6s linear infinite, floatLogo 3s ease-in-out infinite;
+}
+
+@keyframes rotateLogo {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+@keyframes floatLogo {
+    0% { transform: translateY(0); }
+    50% { transform: translateY(-6px); }
+    100% { transform: translateY(0); }
+}
+
+html, body {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: hidden !important;
+}

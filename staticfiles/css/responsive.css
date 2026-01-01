@@ -1,0 +1,239 @@
+/* ---------------------- General Container ---------------------- */
+.container, .container-fluid {
+    padding-left: 1rem;
+    padding-right: 1rem;
+}
+
+/* ---------------------- Images ---------------------- */
+img, .img-fluid {
+    max-width: 100%;
+    height: auto;
+    display: block;
+}
+
+/* ---------------------- Navbar ---------------------- */
+.navbar .brand-title {
+    font-size: 15px;
+    line-height: 18px;
+}
+
+.navbar .navbar-brand img {
+    height: 50px;
+    width: 50px;
+}
+
+/* ---------------------- Buttons ---------------------- */
+.btn, .btn-lg {
+    width: auto;
+    padding: 0.6rem 1.2rem;
+    font-size: 1rem;
+}
+
+/* ---------------------- Cards ---------------------- */
+.card {
+    width: 100%;
+    max-width: 100%;
+}
+
+.card h5 {
+    font-size: 1.1rem;
+}
+
+.card p {
+    font-size: 0.9rem;
+}
+
+/* ---------------------- Chat ---------------------- */
+.chat-container {
+    padding: 0.5rem;
+}
+
+.bubble {
+    max-width: 90%;
+    word-wrap: break-word;
+    font-size: 0.95rem;
+}
+
+/* ---------------------- Forms ---------------------- */
+form input, form select, form textarea {
+    width: 100%;
+    max-width: 100%;
+}
+
+/* ---------------------- Hero Section ---------------------- */
+.hero-text h1 {
+    font-size: 2.5rem;
+}
+
+.hero-text p {
+    font-size: 1.1rem;
+}
+
+.hero-img img {
+    max-height: 450px;
+}
+
+/* ---------------------- Footer ---------------------- */
+footer {
+    padding-left: 1rem;
+    padding-right: 1rem;
+}
+
+/* ---------------------- Floating Shapes ---------------------- */
+.floating-shape {
+    position: absolute;
+    pointer-events: none;
+    max-width: 60px;
+    max-height: 60px;
+}
+
+/* ---------------------- Media Queries ---------------------- */
+@media (max-width: 1200px) {
+    .hero-text h1 {
+        font-size: 2.25rem;
+    }
+    .hero-text p {
+        font-size: 1rem;
+    }
+    .hero-img img {
+        max-height: 400px;
+    }
+    .floating-shape {
+        max-width: 50px;
+        max-height: 50px;
+    }
+}
+
+@media (max-width: 992px) {
+    .col-md-6, .col-md-4, .col-md-5, .col-md-7 {
+        flex: 0 0 100%;
+        max-width: 100%;
+        text-align: center !important;
+        margin-bottom: 1rem;
+    }
+
+    .navbar-collapse {
+        text-align: center;
+    }
+
+    .brand-title {
+        font-size: 14px !important;
+        line-height: 16px !important;
+    }
+
+    .hero-text h1 {
+        font-size: 2rem;
+    }
+
+    .hero-text p {
+        font-size: 0.95rem;
+    }
+
+    .btn-lg {
+        font-size: 0.95rem;
+        padding: 0.5rem 1rem;
+    }
+
+    .floating-shape {
+        display: none; /* optional: hide shapes on tablets */
+    }
+}
+
+@media (max-width: 768px) {
+    .hero-text h1 {
+        font-size: 1.75rem;
+    }
+    .hero-text p {
+        font-size: 0.9rem;
+    }
+    .btn-lg {
+        font-size: 0.9rem;
+        padding: 0.45rem 0.9rem;
+    }
+    .card h5 {
+        font-size: 1rem;
+    }
+    .card p {
+        font-size: 0.85rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .navbar .navbar-brand img {
+        height: 40px;
+        width: 40px;
+    }
+    .brand-title {
+        font-size: 12px !important;
+    }
+    .hero-text h1 {
+        font-size: 1.5rem;
+    }
+    .hero-text p {
+        font-size: 0.85rem;
+    }
+    .btn-lg {
+        font-size: 0.85rem;
+        padding: 0.4rem 0.8rem;
+    }
+    .card h5 {
+        font-size: 0.95rem;
+    }
+    .card p {
+        font-size: 0.8rem;
+    }
+    .chat-container {
+        padding: 0.25rem;
+    }
+    .bubble {
+        font-size: 0.85rem;
+        max-width: 95%;
+    }
+}
+
+/* Navbar adjustments */
+.navbar .brand-title {
+    font-size: 15px;
+    line-height: 1.2;
+}
+
+@media (max-width: 992px) {
+    .navbar .brand-title {
+        font-size: 13px;
+    }
+    .navbar .brand-logo {
+        height: 45px;
+        width: 45px;
+    }
+}
+
+@media (max-width: 576px) {
+    .navbar .brand-title {
+        font-size: 12px;
+    }
+    .navbar .brand-logo {
+        height: 40px;
+        width: 40px;
+    }
+}
+
+@media (max-width: 768px) {
+    .floating-shape {
+        display: none;
+    }
+}
+
+
+@media (max-width: 576px) {
+    .brand-title {
+        font-size: 0.75rem;
+        line-height: 1.2;
+        max-width: 200px;
+        white-space: normal;
+    }
+
+    .brand-logo {
+        width: 40px;
+        height: auto;
+    }
+}
