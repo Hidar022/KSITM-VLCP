@@ -1,316 +1,453 @@
 // static/js/chat.js
-// Safe globals expected: OTHER_USER_ID, CURRENT_USER_ID
+// Required globals: OTHER_USER_ID, CURRENT_USER_ID
 
-const WS_PROTOCOL = location.protocol === "https:" ? "wss" : "ws";
-const WS_URL = `${WS_PROTOCOL}://${location.host}/ws/chat/${OTHER_USER_ID}/`;
 
-let socket;
-let reconnectDelay = 1000;
-let shouldReconnect = true;
-let pendingClientMap = {};
+document.addEventListener("DOMContentLoaded", () => {
 
-// voice recording state
-let mediaRecorder = null;
-let audioChunks = [];
-let isRecording = false;
-let holdTimer = null;
-let currentClientIdForRecording = null;
+    
+if (!OTHER_USER_ID || OTHER_USER_ID === "null") {
+    console.error("❌ OTHER_USER_ID is null. WebSocket not started.");
+    return;
+}
 
-async function startRecording() {
-    if (isRecording) return;
+    /* -------------------- UI Elements -------------------- */
+    const messagesBox = document.getElementById("messages");
+    const sendBtn = document.getElementById("sendBtn");
+    const messageInput = document.getElementById("messageInput");
+    const recordBtn = document.getElementById("recordBtn");
 
-    isRecording = true;
-    audioChunks = [];
+    const callBtn = document.getElementById("startAudioCall");
+    const endCallBtn = document.getElementById("endCallBtn");
 
-    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-    mediaRecorder = new MediaRecorder(stream);
+    const incomingCallBox = document.getElementById("incomingCallBox");
+    const acceptCallBtn = document.getElementById("acceptCall");
+    const rejectCallBtn = document.getElementById("rejectCall");
 
-    const clientId = "c_" + Math.random().toString(36).slice(2, 10);
-    currentClientIdForRecording = clientId;
+    const remoteAudio = document.getElementById("remoteAudio");
 
-    // pending bubble
-    const temp = {
-        message: "🎙 Recording...",
-        client_id: clientId,
-        timestamp: new Date().toISOString(),
-        status: "sent"
-    };
-    const { wrapper, bubble } = createBubbleDOM(temp, true);
-    messagesBox.appendChild(wrapper);
-    pendingClientMap[clientId] = bubble;
-    messagesBox.scrollTop = messagesBox.scrollHeight;
+    const startVideoCallBtn = document.getElementById("startVideoCall");
 
-    mediaRecorder.ondataavailable = e => {
-        if (e.data.size) audioChunks.push(e.data);
-    };
+    const localVideo = document.getElementById("localVideo");
+    const remoteVideo = document.getElementById("remoteVideo");
+    const endVideoCallBtn = document.getElementById("endVideoCallBtn");
+    const callBox = document.getElementById("callBox");
 
-    mediaRecorder.onstop = () => {
-        if (!audioChunks.length) {
-            isRecording = false;
-            return;
-        }
 
-        const blob = new Blob(audioChunks, { type: "audio/webm" });
-        const reader = new FileReader();
+    /* -------------------- State -------------------- */
+    let socket;
+    let reconnectDelay = 1000;
+    let pendingClientMap = {};
+    let pendingIceCandidates = [];
 
-        reader.onloadend = () => {
-            socket.send(JSON.stringify({
-                type: "voice_note",
-                audio: reader.result,
-                client_id: currentClientIdForRecording
-            }));
+
+    let mediaRecorder = null;
+    let audioChunks = [];
+    let isRecording = false;
+    let currentClientIdForRecording = null;
+
+    let peerConnection = null;
+    let localStream = null;
+    let incomingOffer = null;
+    let isCaller = false;
+    let currentCallType = null; // "audio" or "video"
+
+
+
+    const rtcConfig = { iceServers: [{ urls: "stun:stun.l.google.com:19302" }] };
+
+    /* -------------------- WebSocket -------------------- */
+    const WS_PROTOCOL = location.protocol === "https:" ? "wss" : "ws";
+    const WS_URL = `${WS_PROTOCOL}://${location.host}/ws/chat/${OTHER_USER_ID}/`;
+
+    function connect() {
+        socket = new WebSocket(WS_URL);
+
+        socket.onopen = () => {
+            console.log("✅ WebSocket connected");
+            reconnectDelay = 1000;
         };
 
-        reader.readAsDataURL(blob);
-        isRecording = false;
-    };
-
-    mediaRecorder.start();
-}
-
-function stopRecording() {
-    if (!mediaRecorder) return;
-    if (mediaRecorder.state === "recording") {
-        mediaRecorder.stop();
-    }
-}
-
-
-// --------------------- WebSocket ---------------------
-function connect() {
-    socket = new WebSocket(WS_URL);
-
-    socket.onopen = () => {
-        console.log("WS Connected");
-        reconnectDelay = 1000;
-    };
-
-    socket.onclose = () => {
-        if (shouldReconnect) {
+        socket.onclose = () => {
+            console.warn("⚠️ WebSocket closed, reconnecting...");
             setTimeout(connect, reconnectDelay);
             reconnectDelay = Math.min(reconnectDelay * 1.5, 10000);
+        };
+
+        socket.onmessage = async (e) => {
+            const data = JSON.parse(e.data);
+
+            /* ---------- Chat messages ---------- */
+            if (data.type === "message") handleIncomingMessage(data);
+
+                /* ---------- Call Offer ---------- */
+                    if (data.type === "call_offer") {
+            if (data.caller_id == CURRENT_USER_ID) return;
+
+            incomingOffer = data.offer;
+            currentCallType = data.call_type || "audio";
+
+            incomingCallBox.classList.remove("hidden");
         }
-    };
 
-    socket.onmessage = (e) => {
-        const data = JSON.parse(e.data);
-        if (data.type === "message") handleIncomingMessage(data);
-        if (data.type === "delivery") handleDeliveryAck(data.msg_ids, data.status);
-    };
-}
-connect();
+            /* ---------- Call Answer ---------- */
+           if (
+                data.type === "call_answer" &&
+                peerConnection &&
+                peerConnection.signalingState === "have-local-offer"
+            ) {
+                await peerConnection.setRemoteDescription(
+                    new RTCSessionDescription(data.answer)
+                );
 
-// --------------------- UI helpers ---------------------
-const messagesBox = document.getElementById("messages");
+            for (const c of pendingIceCandidates) {
+                await peerConnection.addIceCandidate(c);
+            }
+            pendingIceCandidates = [];
+            }
 
-function formatTS(iso) {
-    const d = new Date(iso);
-    return `${d.getHours()}:${String(d.getMinutes()).padStart(2, "0")}`;
-}
 
-function statusIcon(status) {
-    if (status === "sent") return "✓";
-    if (status === "delivered") return "✓✓";
-    if (status === "seen") return "✓✓ seen";
-    return "";
-}
+            /* ---------- ICE Candidate ---------- */
+            if (data.type === "ice_candidate") {
+            if (peerConnection && peerConnection.remoteDescription) {
+                await peerConnection.addIceCandidate(data.candidate);
+            } else {
+                pendingIceCandidates.push(data.candidate);
+            }
+        }
 
-// --------------------- Bubble DOM ---------------------
-function createBubbleDOM(payload, isMine) {
-    const wrapper = document.createElement("div");
-    wrapper.className = "w-full flex " + (isMine ? "justify-end" : "justify-start");
 
-    const bubble = document.createElement("article");
-    bubble.className =
-        "max-w-[75%] p-3 rounded-xl " +
-        (isMine ? "bg-blue-600 text-white" : "bg-slate-700 text-white");
-
-    if (payload.msg_id) bubble.dataset.msgId = payload.msg_id;
-    if (payload.client_id) bubble.dataset.clientId = payload.client_id;
-
-    if (payload.voice_note) {
-        bubble.innerHTML = `
-            <audio controls src="${payload.voice_note}"></audio>
-            <div class="text-xs text-right mt-1">
-                <span class="msg-ts">${formatTS(payload.timestamp)}</span>
-                ${isMine ? `<span class="msg-status ml-2">${statusIcon(payload.status)}</span>` : ""}
-            </div>
-        `;
-    } else {
-        bubble.innerHTML = `
-            <div>${payload.message || ""}</div>
-            <div class="text-xs text-right mt-1">
-                <span class="msg-ts">${formatTS(payload.timestamp)}</span>
-                ${isMine ? `<span class="msg-status ml-2">${statusIcon(payload.status)}</span>` : ""}
-            </div>
-        `;
+            /* ---------- Call End ---------- */
+            if (data.type === "call_end") {
+                endCallCleanup(false);
+            }
+        };
     }
 
-    wrapper.appendChild(bubble);
-    return { wrapper, bubble };
-}
+    connect();
 
-// --------------------- Incoming messages ---------------------
-function handleIncomingMessage(data) {
-    const isMine = data.sender_id == CURRENT_USER_ID;
-
-    // ✅ PATCH ONLY IF PENDING EXISTS
-    if (data.client_id && pendingClientMap[data.client_id]) {
-        const bubble = pendingClientMap[data.client_id];
-
-        // ✅ VOICE NOTE ONLY
-        if (data.voice_note) {
-            bubble.innerHTML = `
-                <audio controls src="${data.voice_note}"></audio>
-                <div class="text-xs text-right mt-1">
-                    <span class="msg-ts">${formatTS(data.timestamp)}</span>
-                    ${isMine ? `<span class="msg-status ml-2">${statusIcon(data.status)}</span>` : ""}
-                </div>
-            `;
-        }
-
-        // ✅ TEXT MESSAGE
-        else {
-            bubble.innerHTML = `
-                <div>${data.message || ""}</div>
-                <div class="text-xs text-right mt-1">
-                    <span class="msg-ts">${formatTS(data.timestamp)}</span>
-                    ${isMine ? `<span class="msg-status ml-2">${statusIcon(data.status)}</span>` : ""}
-                </div>
-            `;
-        }
-
-        delete pendingClientMap[data.client_id];
-        messagesBox.scrollTop = messagesBox.scrollHeight;
-        return;
+    /* -------------------- Helpers -------------------- */
+    function formatTS(iso) {
+        const d = new Date(iso);
+        return `${d.getHours()}:${String(d.getMinutes()).padStart(2, "0")}`;
     }
 
-    // ✅ NEW MESSAGE (NO PENDING)
-    const payload = {
-        message: data.message,
-        voice_note: data.voice_note,
-        timestamp: data.timestamp,
-        msg_id: data.msg_id,
-        status: data.status,
-        client_id: data.client_id
-    };
+    function createBubbleDOM(payload, isMine) {
+        const wrapper = document.createElement("div");
+        wrapper.className = `w-full flex ${isMine ? "justify-end" : "justify-start"}`;
 
-    const { wrapper } = createBubbleDOM(payload, isMine);
-    messagesBox.appendChild(wrapper);
-    messagesBox.scrollTop = messagesBox.scrollHeight;
-}
+        const bubble = document.createElement("article");
+        bubble.className =
+            "max-w-[75%] p-3 rounded-xl " +
+            (isMine ? "bg-blue-600 text-white" : "bg-slate-700 text-white");
 
+        bubble.innerHTML = payload.voice_note
+            ? `<audio controls src="${payload.voice_note}"></audio>`
+            : `<div>${payload.message || ""}</div>`;
 
-// --------------------- Text sending ---------------------
-function sendWithClientId(payload) {
-    const client_id = "c_" + Math.random().toString(36).slice(2, 10);
-    payload.client_id = client_id;
+        wrapper.appendChild(bubble);
+        return { wrapper, bubble };
+    }
 
-    const temp = {
-        message: payload.message,
-        client_id,
-        timestamp: new Date().toISOString(),
-        status: "sent"
-    };
+    function handleIncomingMessage(data) {
+        const isMine = data.sender_id == CURRENT_USER_ID;
 
-    const { wrapper, bubble } = createBubbleDOM(temp, true);
-    messagesBox.appendChild(wrapper);
-    pendingClientMap[client_id] = bubble;
-
-    socket.send(JSON.stringify(payload));
-}
-
-document.getElementById("sendBtn").onclick = () => {
-    const input = document.getElementById("messageInput");
-    if (!input.value.trim()) return;
-    sendWithClientId({ type: "text", message: input.value.trim() });
-    input.value = "";
-};
-
-// --------------------- VOICE NOTE (FINAL FIX) ---------------------
-async function startRecording() {
-    if (isRecording) return;
-    isRecording = true;
-
-    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-    mediaRecorder = new MediaRecorder(stream);
-    audioChunks = [];
-
-    const clientId = "c_" + Math.random().toString(36).slice(2, 10);
-    currentClientIdForRecording = clientId;
-
-    // pending bubble
-    const temp = {
-        message: "🎙 Recording...",
-        client_id: clientId,
-        timestamp: new Date().toISOString(),
-        status: "sent"
-    };
-    const { wrapper, bubble } = createBubbleDOM(temp, true);
-    messagesBox.appendChild(wrapper);
-    pendingClientMap[clientId] = bubble;
-    messagesBox.scrollTop = messagesBox.scrollHeight;
-
-    mediaRecorder.ondataavailable = e => {
-        if (e.data.size > 0) audioChunks.push(e.data);
-    };
-
-    mediaRecorder.onstop = () => {
-        if (!audioChunks.length) {
-            isRecording = false;
+        if (data.client_id && pendingClientMap[data.client_id]) {
+            const bubble = pendingClientMap[data.client_id];
+            bubble.innerHTML = data.voice_note
+                ? `<audio controls src="${data.voice_note}"></audio>`
+                : `<div>${data.message}</div>`;
+            delete pendingClientMap[data.client_id];
             return;
         }
 
-        const audioBlob = new Blob(audioChunks, { type: "audio/webm" });
-        const reader = new FileReader();
+        const { wrapper } = createBubbleDOM(data, isMine);
+        messagesBox.appendChild(wrapper);
+        messagesBox.scrollTop = messagesBox.scrollHeight;
+    }
 
-        reader.onloadend = () => {
-            socket.send(JSON.stringify({
-                type: "voice_note",
-                audio: reader.result,
-                client_id: currentClientIdForRecording
-            }));
-        };
+    /* -------------------- Send Text -------------------- */
+    sendBtn.onclick = () => {
+        if (!messageInput.value.trim()) return;
 
-        reader.readAsDataURL(audioBlob);
-        isRecording = false;
+        const client_id = "c_" + Math.random().toString(36).slice(2, 10);
+
+        const { wrapper, bubble } = createBubbleDOM({
+            message: messageInput.value,
+            timestamp: new Date().toISOString()
+        }, true);
+
+        messagesBox.appendChild(wrapper);
+        messagesBox.scrollTop = messagesBox.scrollHeight;
+
+        pendingClientMap[client_id] = bubble;
+
+        socket.send(JSON.stringify({
+            type: "text",
+            message: messageInput.value,
+            client_id
+        }));
+
+        messageInput.value = "";
     };
 
-    mediaRecorder.start();
-}
+    /* -------------------- Voice Note -------------------- */
+    recordBtn.onclick = async () => {
+        if (!isRecording) startRecording();
+        else stopRecording();
+    };
 
-function stopRecording() {
-    if (!isRecording) return;
+    async function startRecording() {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        mediaRecorder = new MediaRecorder(stream);
+        audioChunks = [];
+        isRecording = true;
 
-    // prevent double stop
-    if (mediaRecorder && mediaRecorder.state !== "inactive") {
-        mediaRecorder.stop();
+        const client_id = "c_" + Math.random().toString(36).slice(2, 10);
+        currentClientIdForRecording = client_id;
+
+        mediaRecorder.ondataavailable = e => audioChunks.push(e.data);
+
+        mediaRecorder.onstop = () => {
+            const blob = new Blob(audioChunks, { type: "audio/webm" });
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                socket.send(JSON.stringify({
+                    type: "voice_note",
+                    audio: reader.result,
+                    client_id
+                }));
+            };
+            reader.readAsDataURL(blob);
+            isRecording = false;
+        };
+
+        mediaRecorder.start();
     }
-}
+
+    function stopRecording() {
+        mediaRecorder?.stop();
+    }
+
+    /* -------------------- Start Call -------------------- */
+    callBtn.onclick = async () => {
+        isCaller = true; // ✅ MARK CALLER
+        currentCallType = "audio"; // ✅ ADD THIS
 
 
-// --------------------- HOLD TO RECORD (FIXED) ---------------------
-// mouse
-recordBtn.addEventListener("mousedown", () => {
-    holdTimer = setTimeout(startRecording, 180);
+        localStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        peerConnection = new RTCPeerConnection(rtcConfig);
+
+        localStream.getTracks().forEach(track =>
+            peerConnection.addTrack(track, localStream)
+        );
+
+        peerConnection.ontrack = e => {
+            remoteAudio.srcObject = e.streams[0];
+        };
+
+        peerConnection.onicecandidate = e => {
+            if (e.candidate) {
+                socket.send(JSON.stringify({
+                    type: "ice_candidate",
+                    candidate: e.candidate
+                }));
+            }
+        };
+
+        const offer = await peerConnection.createOffer();
+        await peerConnection.setLocalDescription(offer);
+
+        socket.send(JSON.stringify({
+        type: "call_offer",
+        offer,
+        caller_id: CURRENT_USER_ID,
+        call_type: "audio"   // ✅ FIX
+    }));
+
+
+
+        callBtn.classList.add("hidden");
+        endCallBtn.classList.remove("hidden");
+    };
+
+
+    /* -------------------- Accept Call -------------------- */
+    acceptCallBtn.onclick = async () => {
+        if (!incomingOffer || isCaller) return;
+
+        incomingCallBox.classList.add("hidden");
+
+        if (currentCallType === "video") {
+            startVideoCallBtn.classList.add("hidden");
+        }
+
+
+        const constraints =
+            currentCallType === "video"
+                ? { audio: true, video: true }
+                : { audio: true };
+
+        localStream = await navigator.mediaDevices.getUserMedia(constraints);
+
+        peerConnection = new RTCPeerConnection(rtcConfig);
+
+        localStream.getTracks().forEach(t =>
+            peerConnection.addTrack(t, localStream)
+        );
+
+        if (currentCallType === "video") {
+
+            callBox.classList.remove("hidden"); 
+            endVideoCallBtn.classList.remove("hidden");
+
+
+            localVideo.srcObject = localStream;
+            localVideo.classList.remove("hidden");
+            
+
+            peerConnection.ontrack = e => {
+                remoteVideo.srcObject = e.streams[0];
+                remoteVideo.classList.remove("hidden");
+            };
+        } else {
+            peerConnection.ontrack = e => {
+                remoteAudio.srcObject = e.streams[0];
+            };
+        }
+
+        peerConnection.onicecandidate = e => {
+            if (e.candidate) {
+                socket.send(JSON.stringify({
+                    type: "ice_candidate",
+                    candidate: e.candidate
+                }));
+            }
+        };
+
+        await peerConnection.setRemoteDescription(incomingOffer);
+
+        for (const c of pendingIceCandidates) {
+            await peerConnection.addIceCandidate(c);
+        }
+
+        pendingIceCandidates = [];
+
+        const answer = await peerConnection.createAnswer();
+        await peerConnection.setLocalDescription(answer);
+
+        socket.send(JSON.stringify({
+            type: "call_answer",
+            answer
+        }));
+
+        endCallBtn.classList.remove("hidden");
+                if (currentCallType === "video") {
+            callBtn.classList.add("hidden");
+        }
+
+    };
+
+
+
+    /* -------------------- Reject Call -------------------- */
+    rejectCallBtn.onclick = () => {
+        if (!incomingOffer) return;
+        incomingCallBox.classList.add("hidden");
+        socket.send(JSON.stringify({ type: "call_end" }));
+        incomingOffer = null;
+    };
+
+    /* -------------------- End Call -------------------- */
+    endCallBtn.onclick = () => endCallCleanup(true);
+    endVideoCallBtn.onclick = () => endCallCleanup(true);
+
+
+        function endCallCleanup(sendSignal = true) {
+        peerConnection?.close();
+        localStream?.getTracks().forEach(t => t.stop());
+
+        peerConnection = null;
+        localStream = null;
+        incomingOffer = null;
+        isCaller = false;
+        currentCallType = null;
+
+        remoteAudio.srcObject = null;
+
+        if (localVideo) {
+            localVideo.srcObject = null;
+            localVideo.classList.add("hidden");
+        }
+
+        if (remoteVideo) {
+            remoteVideo.srcObject = null;
+            remoteVideo.classList.add("hidden");
+        }
+
+        callBox.classList.add("hidden"); 
+        callBtn.classList.remove("hidden");
+        startVideoCallBtn.classList.remove("hidden");
+        endCallBtn.classList.add("hidden");
+        endVideoCallBtn.classList.add("hidden");
+
+
+        if (sendSignal) {
+            socket.send(JSON.stringify({ type: "call_end" }));
+        }
+    }
+
+
+           //-----------start video call----------//
+        startVideoCallBtn.onclick = async () => {
+            isCaller = true;            // ✅ ADD
+            currentCallType = "video";  // ✅ ADD
+
+            endVideoCallBtn.classList.remove("hidden");
+            callBtn.classList.add("hidden");
+            startVideoCallBtn.classList.add("hidden");
+
+
+            localStream = await navigator.mediaDevices.getUserMedia({
+                audio: true,
+                video: true
+            });
+
+            localVideo.srcObject = localStream;
+            localVideo.classList.remove("hidden");
+
+            peerConnection = new RTCPeerConnection(rtcConfig);
+
+            localStream.getTracks().forEach(track =>
+                peerConnection.addTrack(track, localStream)
+            );
+
+            peerConnection.ontrack = e => {
+                remoteVideo.srcObject = e.streams[0];
+                remoteVideo.classList.remove("hidden");
+                
+            };
+
+            peerConnection.onicecandidate = e => {
+                if (e.candidate) {
+                    socket.send(JSON.stringify({
+                        type: "ice_candidate",
+                        candidate: e.candidate
+                    }));
+                }
+            };
+
+            const offer = await peerConnection.createOffer();
+            await peerConnection.setLocalDescription(offer);
+
+            socket.send(JSON.stringify({
+            type: "call_offer",
+            offer,
+            caller_id: CURRENT_USER_ID,
+            call_type: "video"
+        }));
+
+        };
+
 });
 
-recordBtn.addEventListener("mouseup", stopRecording);
-recordBtn.addEventListener("mouseleave", stopRecording);
-
-// touch
-recordBtn.addEventListener("touchstart", e => {
-    e.preventDefault();
-    holdTimer = setTimeout(startRecording, 180);
-}, { passive: false });
-
-recordBtn.addEventListener("touchend", e => {
-    e.preventDefault();
-    clearTimeout(holdTimer);
-    stopRecording();
-}, { passive: false });
-
-recordBtn.addEventListener("touchcancel", stopRecording);
-
-
-
+ 

@@ -16,41 +16,44 @@ class ChatConsumer(AsyncWebsocketConsumer):
             await self.close()
             return
 
-        self.other_user_id = self.scope['url_route']['kwargs'].get('user_id')
+        self.other_user_id = self.scope["url_route"]["kwargs"].get("user_id")
         if not self.other_user_id:
             await self.close()
             return
 
         uid1 = int(self.user.id)
         uid2 = int(self.other_user_id)
-        self.room_name = f'chat_{min(uid1, uid2)}_{max(uid1, uid2)}'
+        self.room_name = f"chat_{min(uid1, uid2)}_{max(uid1, uid2)}"
 
         await self.channel_layer.group_add(self.room_name, self.channel_name)
         await self.accept()
 
         await self.channel_layer.group_send(self.room_name, {
-            'type': 'presence',
-            'user_id': self.user.id,
-            'status': 'online',
+            "type": "presence",
+            "user_id": self.user.id,
+            "status": "online",
         })
 
     async def disconnect(self, close_code):
         await self.channel_layer.group_discard(self.room_name, self.channel_name)
         await self.channel_layer.group_send(self.room_name, {
-            'type': 'presence',
-            'user_id': self.user.id,
-            'status': 'offline',
+            "type": "presence",
+            "user_id": self.user.id,
+            "status": "offline",
         })
 
     async def receive(self, text_data=None, bytes_data=None):
         data = json.loads(text_data or "{}")
-        dtype = data.get("type", "text")
+        dtype = data.get("type")
+
         sender = self.user
         receiver_user = await self.get_user(int(self.other_user_id))
         sender_profile = await self.get_profile_for_user(sender.id)
         receiver_profile = await self.get_profile_for_user(receiver_user.id)
 
-        # ------------------------- MESSAGE -----------------------
+        # =========================================================
+        # 🟢 CHAT / VOICE NOTE / FILE
+        # =========================================================
         if dtype in ("text", "file", "audio", "voice_note"):
             client_id = data.get("client_id") or str(uuid.uuid4())
             text = data.get("message") or None
@@ -58,12 +61,12 @@ class ChatConsumer(AsyncWebsocketConsumer):
             uploaded_file = None
             voice_note_file = None
 
-            # FILE UPLOAD
+            # FILE
             file_b64 = data.get("file_b64")
             filename = data.get("filename")
             if file_b64 and filename:
                 try:
-                    header, b64 = file_b64.split(",", 1)
+                    _, b64 = file_b64.split(",", 1)
                 except ValueError:
                     b64 = file_b64
                 uploaded_file = ContentFile(base64.b64decode(b64), name=filename)
@@ -72,7 +75,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
             audio_b64 = data.get("audio")
             if audio_b64:
                 try:
-                    header, b64 = audio_b64.split(",", 1)
+                    _, b64 = audio_b64.split(",", 1)
                 except ValueError:
                     b64 = audio_b64
                 voice_note_file = ContentFile(
@@ -80,7 +83,6 @@ class ChatConsumer(AsyncWebsocketConsumer):
                     name=f"voice_{sender.id}_{client_id}.webm"
                 )
 
-            # SAVE MESSAGE
             saved = await self.save_chatmessage(
                 sender_profile,
                 receiver_profile,
@@ -90,12 +92,11 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 client_id=client_id
             )
 
-            # SEND TO GROUP
             await self.channel_layer.group_send(self.room_name, {
                 "type": "chat_message",
                 "message": saved.text or "",
                 "msg_id": saved.id,
-                "client_id": client_id,  # keep client_id to patch pending bubble
+                "client_id": client_id,
                 "sender_id": sender.id,
                 "sender_username": sender.username,
                 "timestamp": saved.timestamp.isoformat(),
@@ -105,40 +106,37 @@ class ChatConsumer(AsyncWebsocketConsumer):
             })
             return
 
-
-        # ------------------------- DELIVERED -----------------------
-        if dtype == "delivered":
+        # =========================================================
+        # 🟡 DELIVERY / SEEN
+        # =========================================================
+        if dtype in ("delivered", "seen"):
             msg_ids = data.get("msg_ids") or []
             if isinstance(msg_ids, int):
                 msg_ids = [msg_ids]
 
-            await self.mark_messages_status(msg_ids, "delivered")
+            await self.mark_messages_status(msg_ids, dtype)
 
             await self.channel_layer.group_send(self.room_name, {
                 "type": "delivery_ack",
                 "msg_ids": msg_ids,
                 "user_id": sender.id,
-                "status": "delivered"
+                "status": dtype
             })
             return
 
-        # -------------------------- SEEN --------------------------
-        if dtype == "seen":
-            msg_ids = data.get("msg_ids") or []
-            if isinstance(msg_ids, int):
-                msg_ids = [msg_ids]
-
-            await self.mark_messages_status(msg_ids, "seen")
-
+        # =========================================================
+        # 🔥 WEBRTC SIGNALING (VOICE / VIDEO CALL)
+        # =========================================================
+        if dtype in ("call_offer", "call_answer", "ice_candidate", "call_end"):
             await self.channel_layer.group_send(self.room_name, {
-                "type": "delivery_ack",
-                "msg_ids": msg_ids,
-                "user_id": sender.id,
-                "status": "seen"
+                "type": "signal",
+                "data": data
             })
             return
 
-    # --------------------- EVENT HANDLERS -------------------------
+    # =========================================================
+    # EVENTS SENT TO CLIENT
+    # =========================================================
 
     async def chat_message(self, event):
         await self.send(text_data=json.dumps({
@@ -154,11 +152,12 @@ class ChatConsumer(AsyncWebsocketConsumer):
             "file": event.get("file"),
         }))
 
-    async def typing(self, event):
+    async def delivery_ack(self, event):
         await self.send(text_data=json.dumps({
-            "type": "typing",
+            "type": "delivery",
+            "msg_ids": event["msg_ids"],
             "user_id": event["user_id"],
-            "is_typing": event["is_typing"],
+            "status": event["status"],
         }))
 
     async def presence(self, event):
@@ -168,15 +167,13 @@ class ChatConsumer(AsyncWebsocketConsumer):
             "status": event["status"],
         }))
 
-    async def delivery_ack(self, event):
-        await self.send(text_data=json.dumps({
-            "type": "delivery",
-            "msg_ids": event["msg_ids"],
-            "user_id": event["user_id"],
-            "status": event["status"],
-        }))
+    async def signal(self, event):
+        # 🚀 Forward WebRTC signaling EXACTLY as sent
+        await self.send(text_data=json.dumps(event["data"]))
 
-    # --------------------- DATABASE HELPERS -------------------------
+    # =========================================================
+    # DATABASE HELPERS
+    # =========================================================
 
     @database_sync_to_async
     def get_user(self, user_id):

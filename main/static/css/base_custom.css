@@ -100,3 +100,9 @@ footer a:hover { color: #F58634; }
     50% { transform: translateY(-6px); }
     100% { transform: translateY(0); }
 }
+
+html, body {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: hidden !important;
+}

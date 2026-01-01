@@ -67,7 +67,12 @@
           <button id="startAudioCall" class="btn-ghost" title="Start voice call" aria-label="Start voice call">🔊</button>
           <button id="startVideoCall" class="btn-ghost" title="Start video call" aria-label="Start video call">🎥</button>
           <button id="endCallBtn" class="btn-ghost hidden" title="End call" aria-hidden="true">⛔</button>
+          <button id="endVideoCallBtn" class="btn-ghost hidden" title="End video call">
+            ⛔🎥
+          </button>
+
         </div>
+
       </header>
 
       <!-- Messages area -->
@@ -136,15 +141,28 @@
     <video id="remoteVideo" autoplay playsinline class="remote-video"></video>
   </div>
 
-  <!-- Safe JS globals for chat.js -->
+  <div id="incomingCallBox" class="hidden fixed inset-0 bg-black/70 flex items-center justify-center z-50">
+  <div class="bg-slate-900 p-6 rounded-xl text-center space-y-4">
+    <h2 class="text-white text-lg">Incoming call…</h2>
+    <div class="flex gap-4 justify-center">
+      <button id="acceptCall" class="px-4 py-2 bg-green-600 rounded">Accept</button>
+      <button id="rejectCall" class="px-4 py-2 bg-red-600 rounded">Reject</button>
+    </div>
+  </div>
+</div>
+
+
   <script>
-    AOS.init({ once:false, duration:700, easing:'ease-in-out' });
-    const KS_CSRF = "{{ csrf_token }}";
-    const OTHER_USER_ID = "{{ other_user.id|default:'null' }}";
-    const CURRENT_USER_ID = "{{ request.user.id }}";
-    const WS_SCHEME = (location.protocol === 'https:') ? 'wss' : 'ws';
-  </script>
+  AOS.init({ once:false, duration:700, easing:'ease-in-out' });
+  const KS_CSRF = "{{ csrf_token }}";
+  const CURRENT_USER_ID = "{{ request.user.id }}";
+  const OTHER_USER_ID = "{{ other_user.id|default:'null' }}";
+  const WS_SCHEME = (location.protocol === 'https:') ? 'wss' : 'ws';
+</script>
+
 
   <script src="{% static 'js/chat.js' %}"></script>
+  <audio id="remoteAudio" autoplay></audio>
+
 </body>
 </html>
