@@ -11,23 +11,31 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # SECURITY
 # ------------------------------
 
-SECRET_KEY = os.environ.get("SECRET_KEY")
+SECRET_KEY = os.environ.get("SECRET_KEY", "dev-secret-key")
 
-DEBUG = os.environ.get("DEBUG", "False") == "True"
+DEBUG = os.environ.get("DEBUG", "True") == "True"
 
-ALLOWED_HOSTS = os.environ.get("ALLOWED_HOSTS", "").split(",")
+ALLOWED_HOSTS = os.environ.get(
+    "ALLOWED_HOSTS",
+    "127.0.0.1,localhost"
+).split(",")
 
-CSRF_TRUSTED_ORIGINS = os.environ.get("CSRF_TRUSTED_ORIGINS", "").split(",")
+CSRF_TRUSTED_ORIGINS = os.environ.get(
+    "CSRF_TRUSTED_ORIGINS",
+    "http://127.0.0.1,http://localhost"
+).split(",")
+
 
 MEDIA_URL = os.environ.get("MEDIA_URL", "/media/")
-MEDIA_ROOT = os.environ.get("MEDIA_ROOT", "media")
+MEDIA_ROOT = os.path.join(BASE_DIR, "media")
+
 
 
 # ------------------------------
 # APPS
 # ------------------------------
 INSTALLED_APPS = [
-    'daphne',  # ASGI server
+    # 'daphne',  # ASGI server
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -110,7 +118,9 @@ USE_TZ = True
 # STATIC FILES
 # ------------------------------
 STATIC_URL = '/static/'
-STATICFILES_DIRS = [BASE_DIR / 'main' / 'static']  # dev
+STATICFILES_DIRS = [
+    BASE_DIR / 'main' / 'static'
+] if DEBUG else []
 STATIC_ROOT = BASE_DIR / 'staticfiles'             # prod
 STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
@@ -157,5 +167,4 @@ LOGOUT_REDIRECT_URL = '/login/'
 # ------------------------------
 # CSRF / CORS
 # ------------------------------
-CSRF_TRUSTED_ORIGINS = ["https://*.railway.app"]
 CORS_ALLOW_ALL_ORIGINS = True

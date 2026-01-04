@@ -78,17 +78,15 @@ class ChatConsumer(AsyncWebsocketConsumer):
                     b64 = file_b64
                 uploaded_file = ContentFile(base64.b64decode(b64), name=filename)
 
-            # VOICE NOTE
-            audio_b64 = data.get("audio")
+            # VOICE NOTE (from JS base64 "audio_data")
+            audio_b64 = data.get("audio_data")  # <-- new key from JS
+            mime_type = data.get("mime_type", "audio/webm")  # optional
             if audio_b64:
-                try:
-                    _, b64 = audio_b64.split(",", 1)
-                except ValueError:
-                    b64 = audio_b64
                 voice_note_file = ContentFile(
-                    base64.b64decode(b64),
+                    base64.b64decode(audio_b64),
                     name=f"voice_{sender.id}_{client_id}.webm"
                 )
+
 
             saved = await self.save_chatmessage(
                 sender_profile,

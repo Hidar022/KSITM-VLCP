@@ -1,14 +1,17 @@
 // static/js/chat.js
 // Required globals: OTHER_USER_ID, CURRENT_USER_ID
 
+//-----start server with 
+// daphne -b 127.0.0.1 -p 8000 ksitm_vlcp.asgi:application----//
+
 
 document.addEventListener("DOMContentLoaded", () => {
 
-    
-if (!OTHER_USER_ID || OTHER_USER_ID === "null") {
-    console.error("❌ OTHER_USER_ID is null. WebSocket not started.");
-    return;
-}
+    if (OTHER_USER_ID === null) {
+        console.warn("ℹ️ No chat selected yet.");
+        return;
+    }
+
 
     /* -------------------- UI Elements -------------------- */
     const messagesBox = document.getElementById("messages");
@@ -31,6 +34,7 @@ if (!OTHER_USER_ID || OTHER_USER_ID === "null") {
     const remoteVideo = document.getElementById("remoteVideo");
     const endVideoCallBtn = document.getElementById("endVideoCallBtn");
     const callBox = document.getElementById("callBox");
+     const audioInput = document.getElementById("audioInput");
 
 
     /* -------------------- State -------------------- */
@@ -190,85 +194,76 @@ if (!OTHER_USER_ID || OTHER_USER_ID === "null") {
         messageInput.value = "";
     };
 
-    /* -------------------- Voice Note -------------------- */
-    recordBtn.onclick = async () => {
-        if (!isRecording) startRecording();
-        else stopRecording();
-    };
+   /* -------------------- Voice Note (WhatsApp style) -------------------- */
+recordBtn.addEventListener("click", async () => {
+    console.log("🎙 Click | isRecording:", isRecording);
 
-    async function startRecording() {
-        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-        mediaRecorder = new MediaRecorder(stream);
-        audioChunks = [];
-        isRecording = true;
+    try {
+        if (!isRecording) {
+            // ▶ START RECORDING
+            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
 
-        const client_id = "c_" + Math.random().toString(36).slice(2, 10);
-        currentClientIdForRecording = client_id;
+            mediaRecorder = new MediaRecorder(stream);
+            audioChunks = [];
+            isRecording = true;
 
-        mediaRecorder.ondataavailable = e => audioChunks.push(e.data);
+            // ✅ VISUAL STATE
+            recordBtn.classList.add("recording");
+            recordBtn.innerText = "⏹";
 
-        mediaRecorder.onstop = () => {
-            const blob = new Blob(audioChunks, { type: "audio/webm" });
-            const reader = new FileReader();
-            reader.onloadend = () => {
-                socket.send(JSON.stringify({
-                    type: "voice_note",
-                    audio: reader.result,
-                    client_id
-                }));
+            mediaRecorder.ondataavailable = e => audioChunks.push(e.data);
+
+            mediaRecorder.onstop = async () => {
+                console.log("⏹ Recorder stopped");
+
+                const audioBlob = new Blob(audioChunks, { type: "audio/webm" });
+                const audioURL = URL.createObjectURL(audioBlob);
+
+                const client_id = "c_" + Math.random().toString(36).slice(2, 10);
+                const { wrapper, bubble } = createBubbleDOM(
+                    { voice_note: audioURL },
+                    true
+                );
+
+                messagesBox.appendChild(wrapper);
+                messagesBox.scrollTop = messagesBox.scrollHeight;
+                pendingClientMap[client_id] = bubble;
+
+                const reader = new FileReader();
+                reader.onload = () => {
+                    socket.send(JSON.stringify({
+                        type: "voice_note",
+                        client_id,
+                        audio_data: reader.result.split(",")[1],
+                        mime_type: audioBlob.type
+                    }));
+                };
+                reader.readAsDataURL(audioBlob);
+
+                stream.getTracks().forEach(t => t.stop());
+
+                // ✅ RESET STATE
+                isRecording = false;
+                recordBtn.classList.remove("recording");
+                recordBtn.innerText = "🎙";
+                mediaRecorder = null;
             };
-            reader.readAsDataURL(blob);
-            isRecording = false;
-        };
 
-        mediaRecorder.start();
-    }
+            mediaRecorder.start();
 
-    function stopRecording() {
-        mediaRecorder?.stop();
-    }
-
-    /* -------------------- Start Call -------------------- */
-    callBtn.onclick = async () => {
-        isCaller = true; // ✅ MARK CALLER
-        currentCallType = "audio"; // ✅ ADD THIS
-
-
-        localStream = await navigator.mediaDevices.getUserMedia({ audio: true });
-        peerConnection = new RTCPeerConnection(rtcConfig);
-
-        localStream.getTracks().forEach(track =>
-            peerConnection.addTrack(track, localStream)
-        );
-
-        peerConnection.ontrack = e => {
-            remoteAudio.srcObject = e.streams[0];
-        };
-
-        peerConnection.onicecandidate = e => {
-            if (e.candidate) {
-                socket.send(JSON.stringify({
-                    type: "ice_candidate",
-                    candidate: e.candidate
-                }));
+        } else {
+            // ⏹ STOP RECORDING
+            if (mediaRecorder && mediaRecorder.state !== "inactive") {
+                mediaRecorder.stop();
             }
-        };
-
-        const offer = await peerConnection.createOffer();
-        await peerConnection.setLocalDescription(offer);
-
-        socket.send(JSON.stringify({
-        type: "call_offer",
-        offer,
-        caller_id: CURRENT_USER_ID,
-        call_type: "audio"   // ✅ FIX
-    }));
-
-
-
-        callBtn.classList.add("hidden");
-        endCallBtn.classList.remove("hidden");
-    };
+        }
+    } catch (err) {
+        console.error("❌ Mic error:", err);
+        isRecording = false;
+        recordBtn.classList.remove("recording");
+        recordBtn.innerText = "🎙";
+    }
+});
 
 
     /* -------------------- Accept Call -------------------- */

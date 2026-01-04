@@ -113,6 +113,14 @@
 
           <label for="fileInput" class="sr-only">Attach file</label>
           <input id="fileInput" type="file" class="hidden" />
+          <input 
+            id="audioInput"
+            type="file"
+            name="audio"
+            accept="audio/*"
+            class="hidden"
+          />
+
 
           <button id="attachBtn" class="tool-btn">📎</button>
         </div>
@@ -156,7 +164,7 @@
   AOS.init({ once:false, duration:700, easing:'ease-in-out' });
   const KS_CSRF = "{{ csrf_token }}";
   const CURRENT_USER_ID = "{{ request.user.id }}";
-  const OTHER_USER_ID = "{{ other_user.id|default:'null' }}";
+  const OTHER_USER_ID = {% if other_user %}{{ other_user.id }}{% else %}null{% endif %};
   const WS_SCHEME = (location.protocol === 'https:') ? 'wss' : 'ws';
 </script>
 
