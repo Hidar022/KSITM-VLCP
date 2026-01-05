@@ -16,7 +16,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.environ.get("SECRET_KEY", "dev-secret-key")
 
 # Detect if we are on Railway
-RAILWAY = os.environ.get("RAILWAY_ENV")  # Railway automatically sets this env
+RAILWAY = os.environ.get("RAILWAY_ENV")
 
 DEBUG = os.environ.get("DEBUG", "True") == "True" if not RAILWAY else False
 
@@ -24,15 +24,30 @@ DEBUG = os.environ.get("DEBUG", "True") == "True" if not RAILWAY else False
 # HOSTS & CSRF
 # ------------------------------
 if RAILWAY:
-    # Production on Railway
     ALLOWED_HOSTS = ["ksitm-vlcp-production.up.railway.app"]
     CSRF_TRUSTED_ORIGINS = ["https://ksitm-vlcp-production.up.railway.app"]
 else:
-    # Local development
-    ALLOWED_HOSTS = os.environ.get("ALLOWED_HOSTS", "127.0.0.1,localhost").split(",")
-    CSRF_TRUSTED_ORIGINS = os.environ.get(
-        "CSRF_TRUSTED_ORIGINS", "http://127.0.0.1,http://localhost"
+    ALLOWED_HOSTS = os.environ.get(
+        "ALLOWED_HOSTS", "127.0.0.1,localhost"
     ).split(",")
+    CSRF_TRUSTED_ORIGINS = os.environ.get(
+        "CSRF_TRUSTED_ORIGINS",
+        "http://127.0.0.1,http://localhost"
+    ).split(",")
+
+# ------------------------------
+# 🚨 CRITICAL FIX FOR RAILWAY (CSRF + HTTPS PROXY)
+# ------------------------------
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+
+CSRF_COOKIE_SECURE = True
+SESSION_COOKIE_SECURE = True
+
+CSRF_COOKIE_SAMESITE = "Lax"
+SESSION_COOKIE_SAMESITE = "Lax"
+
+# (Optional – helps during debugging, safe to remove later)
+WHITENOISE_MAX_AGE = 0
 
 # ------------------------------
 # MEDIA
@@ -100,7 +115,9 @@ ASGI_APPLICATION = "ksitm_vlcp.asgi.application"
 # DATABASE
 # ------------------------------
 DATABASES = {
-    "default": dj_database_url.config(default=f"sqlite:///{BASE_DIR / 'db.sqlite3'}")
+    "default": dj_database_url.config(
+        default=f"sqlite:///{BASE_DIR / 'db.sqlite3'}"
+    )
 }
 
 # ------------------------------
@@ -147,7 +164,6 @@ if REDIS_URL:
         },
     }
 else:
-    # Local dev fallback
     CHANNEL_LAYERS = {
         "default": {
             "BACKEND": "channels.layers.InMemoryChannelLayer",
@@ -168,6 +184,6 @@ LOGIN_REDIRECT_URL = "/dashboard/"
 LOGOUT_REDIRECT_URL = "/login/"
 
 # ------------------------------
-# CORS
+# CORS (testing only)
 # ------------------------------
 CORS_ALLOW_ALL_ORIGINS = True
