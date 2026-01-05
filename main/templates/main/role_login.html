@@ -11,22 +11,26 @@
 
 <div class="auth-container">
 
+    <!-- Floating shapes -->
     <div class="floating-shape shape1"></div>
     <div class="floating-shape shape2"></div>
 
     <div class="auth-box" data-aos="zoom-in">
+        <!-- Logo -->
         <div class="logo-circle">
             <img src="{% static 'images/ksitm_logo.png' %}" alt="KSITM Logo">
         </div>
 
-        <h3 class="text-white mb-4">Login</h3>
+        <h3 class="mb-4">Login</h3>
 
+        <!-- Role Tabs -->
         <div class="role-tab-container">
             <div id="tab-student" class="role-tab active-role" onclick="switchRole('student')">Student</div>
             <div id="tab-lecturer" class="role-tab" onclick="switchRole('lecturer')">Lecturer</div>
             <div id="tab-admin" class="role-tab" onclick="switchRole('admin')">Admin</div>
         </div>
 
+        <!-- Login Form -->
         <form method="POST">
             {% csrf_token %}
             <input type="hidden" name="role" id="roleInput" value="student">
@@ -51,21 +55,14 @@
     </div>
 </div>
 
+<!-- Role switching script -->
 <script>
     function switchRole(role) {
         document.getElementById("roleInput").value = role;
-
-        document.querySelectorAll(".role-tab")
-            .forEach(t => t.classList.remove("active-role"));
-
-        document.getElementById("tab-" + role)
-            .classList.add("active-role");
-
-        document.getElementById("lecturer-id-box").style.display =
-            role === "lecturer" ? "block" : "none";
-
-        document.getElementById("registerBox").style.display =
-            role === "student" ? "block" : "none";
+        document.querySelectorAll(".role-tab").forEach(t => t.classList.remove("active-role"));
+        document.getElementById("tab-" + role).classList.add("active-role");
+        document.getElementById("lecturer-id-box").style.display = role === "lecturer" ? "block" : "none";
+        document.getElementById("registerBox").style.display = role === "student" ? "block" : "none";
     }
 
     window.onload = () => switchRole("student");

@@ -1,117 +1,212 @@
-/* message status small */
-.msg-status {
-  font-weight: 700;
-  font-size: 11px;
-  opacity: 0.85;
-  margin-left: .5rem;
+/* ===========================
+   KSITM Chat – White & Orange
+=========================== */
+
+/* ---------- ROOT COLORS ---------- */
+:root {
+    --ks-bg: #ffffff;
+    --ks-panel: #f9f9f9;
+    --ks-text: #111111;
+    --ks-subtext: #666666;
+    --ks-accent: #F58634;
+    --ks-accent-gradient: linear-gradient(90deg, #F58634, #FF8C42);
+    --ks-border: #e2e2e2;
 }
 
-
-/* chat.css - premium glass + iMessage-style bubbles (big curved) */
-:root{
-  --ks-dark: #0f172a;
-  --ks-panel-top: #071028;
-  --ks-panel-btm: #081225;
-  --ks-blue: #2563eb;
-  --ks-purple: #4f46e5;
-  --ks-accent-gradient: linear-gradient(90deg,var(--ks-blue),var(--ks-purple));
+/* ---------- BASE ---------- */
+body.bg-ksitm-dark {
+    background: var(--ks-bg);
+    color: var(--ks-text);
+    font-family: 'Poppins', sans-serif;
 }
 
-/* base */
-.bg-ksitm-dark { background: var(--ks-dark); }
-.text-ksitm-txt { color: #e6eef8; font-family: 'Poppins', sans-serif; }
-
-/* floating decorative shapes (borrowed from auth CSS) */
-.floating-shape{ position:fixed; border-radius:50%; z-index:0; opacity:0.06; filter: blur(10px); pointer-events:none; }
-.shape1{ width:150px; height:150px; background:var(--ks-blue); top:40px; left:40px; animation: float 12s ease-in-out infinite; }
-.shape2{ width:100px; height:100px; background:var(--ks-purple); bottom:60px; right:40px; animation: float 18s ease-in-out infinite; }
+/* ---------- FLOATING SHAPES ---------- */
+.floating-shape {
+    position: fixed;
+    border-radius: 50%;
+    opacity: 0.06;
+    filter: blur(10px);
+    pointer-events: none;
+}
+.shape1 {
+    width: 150px;
+    height: 150px;
+    background: var(--ks-accent);
+    top: 40px;
+    left: 40px;
+    animation: float 12s ease-in-out infinite;
+}
+.shape2 {
+    width: 100px;
+    height: 100px;
+    background: #FFC68A;
+    bottom: 60px;
+    right: 40px;
+    animation: float 18s ease-in-out infinite;
+}
 
 @keyframes float {
-  0%{ transform: translateY(0) translateX(0) }
-  50%{ transform: translateY(-14px) translateX(8px) }
-  100%{ transform: translateY(0) translateX(0) }
+    0% { transform: translate(0,0); }
+    50% { transform: translate(8px,-14px); }
+    100% { transform: translate(0,0); }
 }
 
-/* containers */
-.min-h-screen { min-height: 100vh; }
-
-/* sidebar & chat panel */
-.w-80{ width:20rem; }
-.rounded-2xl{ border-radius:16px; }
-
-/* shadow & panel backgrounds */
-.shadow-xl{ box-shadow: 0 10px 50px rgba(2,6,23,0.7); }
-.bg-ksitm-panel-top{ background: var(--ks-panel-top); }
-.bg-ksitm-panel-btm{ background: var(--ks-panel-btm); }
-
-/* users list */
-.user-entry{ display:flex; gap:12px; align-items:center; padding:10px; border-radius:10px; transition:all .22s; }
-.user-entry:hover{ transform: translateX(6px); }
-
-/* message bubble - iMessage big curved style */
-.rounded-2xl { border-radius: 18px; }
-.msg-bubble { padding: 14px 16px; border-radius: 28px; }
-
-/* message styles */
-.shadow-message{ box-shadow: 0 12px 40px rgba(2,6,23,0.65); border: 1px solid rgba(255,255,255,0.03); }
-.bg-ksitm-accent{ background: linear-gradient(180deg,#1646cc,#2563eb); }
-.bg-white\/6{ background: rgba(255,255,255,0.06); }
-
-/* message in animation */
-.animate-message-in{ animation: messageIn 360ms cubic-bezier(.2,.9,.25,1); }
-@keyframes messageIn {
-  from { opacity:0; transform: translateY(8px) scale(.995); }
-  to { opacity:1; transform: translateY(0) scale(1); }
+/* ---------- SIDEBAR ---------- */
+aside {
+    background: var(--ks-panel);
 }
 
-/* header & buttons */
-.btn-ghost{ background:transparent; border:1px solid rgba(255,255,255,0.03); color:#dfefff; padding:8px 10px; border-radius:10px; cursor:pointer; transition:all .12s ease; }
-.btn-ghost:hover{ transform:translateY(-3px); box-shadow:0 8px 30px rgba(37,99,235,0.06); }
-
-/* tools */
-.tool-btn{ background:transparent; border:1px solid rgba(255,255,255,0.03); padding:8px; border-radius:10px; color:#e6f2ff; cursor:pointer; transition:all .12s ease; }
-.tool-btn.recording{ color:#ff6b6b; box-shadow:0 12px 36px rgba(255,87,87,0.12); transform:scale(1.02); }
-
-/* send */
-.send-btn{ background:var(--ks-accent-gradient); color:white; padding:10px 14px; border-radius:12px; font-weight:700; border:none; cursor:pointer; box-shadow:0 8px 30px rgba(37,99,235,0.12); }
-
-/* responsive */
-@media (max-width: 1024px){
-  .w-80{ width:18rem; }
+.user-entry {
+    display: flex;
+    gap: 12px;
+    padding: 10px;
+    border-radius: 10px;
+    color: var(--ks-text);
+    text-decoration: none;
+    transition: 0.2s;
 }
-@media (max-width: 640px){
-  .min-h-screen { padding: 12px; }
-  .w-80{ width: 100%; }
-  main{ padding: 12px; }
-  #messages { padding: 8px; }
-  .msg-bubble{ max-width: 86%; }
-  .floating-shape{ display: none; } /* save space on mobile */
+.user-entry:hover,
+.user-active {
+    background: var(--ks-accent-gradient);
+    color: #fff;
 }
 
-#callBox {
-  width: 100vw;
-  height: 100vh;
-  inset: 0;
+.user-avatar {
+    width: 40px;
+    height: 40px;
+    background: var(--ks-accent);
+    color: #fff;
+    font-weight: 700;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
-.local-video {
-  width: 120px;
-  height: 160px;
-  position: absolute;
-  right: 10px;
-  bottom: 10px;
-  z-index: 60;
+/* ---------- CHAT PANEL ---------- */
+.panel-bg {
+    background: var(--ks-panel);
+    border-radius: 16px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.08);
 }
 
-.remote-video {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
+header {
+    border-bottom: 1px solid var(--ks-border);
 }
 
+.header-avatar {
+    width: 40px;
+    height: 40px;
+    background: var(--ks-accent);
+    color: #fff;
+    font-weight: 700;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* ---------- MESSAGES ---------- */
+#messages {
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+/* MESSAGE BUBBLE */
+.message-card {
+    padding: 12px 16px;
+    border-radius: 22px;
+    max-width: 70%;
+    word-wrap: break-word;
+    font-weight: 500;
+}
+
+/* SENT */
+.message-me {
+    background: var(--ks-accent-gradient);
+    color: #fff;
+    align-self: flex-end;
+}
+
+/* RECEIVED */
+.message-other {
+    background: #ececec;
+    color: var(--ks-text);
+    align-self: flex-start;
+}
+
+.message-meta {
+    font-size: 10px;
+    color: var(--ks-subtext);
+    margin-top: 4px;
+}
+
+/* ---------- VOICE NOTES ---------- */
+/* IMPORTANT: NO BACKGROUND HERE – inherit bubble */
+.message-card audio {
+    width: 200px;
+    margin-top: 4px;
+    border-radius: 14px;
+}
+
+/* Sent voice */
+.message-me audio {
+    accent-color: #fff;
+    box-shadow: 0 0 8px rgba(255,255,255,0.4);
+}
+
+/* Received voice */
+.message-other audio {
+    accent-color: var(--ks-accent);
+}
+
+/* ---------- ATTACHMENTS ---------- */
+.attachment {
+    padding: 6px 10px;
+    background: #f0f0f0;
+    border-radius: 10px;
+    text-decoration: none;
+    color: var(--ks-text);
+}
+
+/* ---------- INPUT ---------- */
+.message-input {
+    background: #fff;
+    color: var(--ks-text);
+    border: 1px solid var(--ks-border);
+}
+
+/* ---------- BUTTONS ---------- */
+.send-btn {
+    background: var(--ks-accent-gradient);
+    color: #fff;
+    padding: 10px 14px;
+    border-radius: 12px;
+    font-weight: 700;
+    border: none;
+    cursor: pointer;
+    box-shadow: 0 6px 20px rgba(245,134,52,0.3);
+}
+
+.tool-btn,
+.btn-ghost {
+    background: #fff;
+    border: 1px solid var(--ks-border);
+    color: var(--ks-text);
+}
+
+.tool-btn:hover,
+.btn-ghost:hover {
+    background: var(--ks-accent-gradient);
+    color: #fff;
+}
+
+/* ---------- RECORDING ---------- */
 .recording {
-    background: red;
-    color: white;
+    background: var(--ks-accent);
+    color: #fff;
     animation: pulse 1s infinite;
 }
 
@@ -119,4 +214,31 @@
     0% { opacity: 1; }
     50% { opacity: 0.5; }
     100% { opacity: 1; }
+}
+
+/* ---------- VIDEO CALL ---------- */
+#callBox {
+    position: fixed;
+    inset: 0;
+    z-index: 50;
+}
+.local-video {
+    width: 120px;
+    height: 160px;
+    position: absolute;
+    bottom: 10px;
+    right: 10px;
+    border: 2px solid var(--ks-accent);
+    border-radius: 12px;
+}
+.remote-video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* ---------- RESPONSIVE ---------- */
+@media (max-width: 640px) {
+    .floating-shape { display: none; }
+    .message-card { max-width: 86%; }
 }

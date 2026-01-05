@@ -2,11 +2,27 @@
 {% load static %}
 
 {% block title %}Courses - KSITM VLCP{% endblock %}
-
 {% block content %}
+<style>
+/* Courses Page Cards */
+.courses-page .card {
+    background-color: #ffffff !important; /* white background */
+    color: #0f172a !important;           /* black text */
+}
 
-<div class="container py-5">
-    <h1 class="text-center fw-bold mb-4" data-aos="fade-down" style="color:#2A1672;">Our NID Programs</h1>
+.courses-page .card h5 {
+    color: #0f172a !important;
+}
+
+.courses-page .card p {
+    color: #333333 !important;
+}
+</style>
+
+<div class="container py-5 courses-page">
+    <h1 class="text-center fw-bold mb-4 text-black" data-aos="fade-down">
+        Our NID Programs
+    </h1>
 
     <div class="row row-cols-1 row-cols-md-3 g-4">
 
@@ -15,8 +31,10 @@
             <div class="card border-0 shadow-sm hover-card h-100">
                 <img src="{% static 'images/course_software.png' %}" class="card-img-top" alt="">
                 <div class="card-body">
-                    <h5 class="fw-bold" style="color:#2A1672;">NID Computer Software Engineering</h5>
-                    <p class="text-secondary">Learn software design, programming, debugging & application development.</p>
+                    <h5 class="fw-bold text-primary">NID Computer Software Engineering</h5>
+                    <p class="text-secondary">
+                        Learn software design, programming, debugging & application development.
+                    </p>
                 </div>
             </div>
         </div>
@@ -26,8 +44,10 @@
             <div class="card border-0 shadow-sm hover-card h-100">
                 <img src="{% static 'images/course_network.png' %}" class="card-img-top" alt="">
                 <div class="card-body">
-                    <h5 class="fw-bold" style="color:#2A1672;">NID Network & System Security</h5>
-                    <p class="text-secondary">Master networking, cybersecurity, ethical hacking & systems defense.</p>
+                    <h5 class="fw-bold text-primary">NID Network & System Security</h5>
+                    <p class="text-secondary">
+                        Master networking, cybersecurity, ethical hacking & systems defense.
+                    </p>
                 </div>
             </div>
         </div>
@@ -37,8 +57,10 @@
             <div class="card border-0 shadow-sm hover-card h-100">
                 <img src="{% static 'images/course_account.png' %}" class="card-img-top" alt="">
                 <div class="card-body">
-                    <h5 class="fw-bold" style="color:#2A1672;">NID Accountancy</h5>
-                    <p class="text-secondary">Develop skills in financial records, auditing, corporate and public accounting.</p>
+                    <h5 class="fw-bold text-primary">NID Accountancy</h5>
+                    <p class="text-secondary">
+                        Develop skills in financial records, auditing, corporate and public accounting.
+                    </p>
                 </div>
             </div>
         </div>
@@ -48,8 +70,10 @@
             <div class="card border-0 shadow-sm hover-card h-100">
                 <img src="{% static 'images/course_media.png' %}" class="card-img-top" alt="">
                 <div class="card-body">
-                    <h5 class="fw-bold" style="color:#2A1672;">NID Multimedia Technology</h5>
-                    <p class="text-secondary">Learn graphics, animation, video editing & digital content creation.</p>
+                    <h5 class="fw-bold text-primary">NID Multimedia Technology</h5>
+                    <p class="text-secondary">
+                        Learn graphics, animation, video editing & digital content creation.
+                    </p>
                 </div>
             </div>
         </div>
@@ -59,8 +83,10 @@
             <div class="card border-0 shadow-sm hover-card h-100">
                 <img src="{% static 'images/course_engineering.png' %}" class="card-img-top" alt="">
                 <div class="card-body">
-                    <h5 class="fw-bold" style="color:#2A1672;">NID Computer Engineering</h5>
-                    <p class="text-secondary">Study computer systems, electronics, microprocessors & system maintenance.</p>
+                    <h5 class="fw-bold text-primary">NID Computer Engineering</h5>
+                    <p class="text-secondary">
+                        Study computer systems, electronics, microprocessors & system maintenance.
+                    </p>
                 </div>
             </div>
         </div>
@@ -70,13 +96,14 @@
             <div class="card border-0 shadow-sm hover-card h-100">
                 <img src="{% static 'images/course_hardware.png' %}" class="card-img-top" alt="">
                 <div class="card-body">
-                    <h5 class="fw-bold" style="color:#2A1672;">NID Computer Hardware Technology</h5>
-                    <p class="text-secondary">Become skilled at PC repairs, assembling, troubleshooting and maintenance.</p>
+                    <h5 class="fw-bold text-primary">NID Computer Hardware Technology</h5>
+                    <p class="text-secondary">
+                        Become skilled at PC repairs, assembling, troubleshooting and maintenance.
+                    </p>
                 </div>
             </div>
         </div>
 
     </div>
 </div>
-
 {% endblock %}

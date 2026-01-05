@@ -6,140 +6,34 @@
 {% block content %}
 {% with hide_footer=True %}
 <link href="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.css" rel="stylesheet">
-<style>
-body {
-    background: #0f172a;
-    font-family: 'Poppins', sans-serif;
-    color: white;
-    margin: 0;
-}
-
-.dashboard-wrapper {
-    display: flex;
-    flex-direction: column;
-    min-height: 100vh;
-    padding-top: 60px;
-    overflow-x: hidden;
-}
-
-/* Top Navigation Tabs */
-.top-nav {
-    display: flex;
-    justify-content: center;
-    gap: 25px;
-    margin-bottom: 30px;
-    flex-wrap: wrap;
-}
-
-.top-nav a {
-    text-decoration: none;
-    color: white;
-    font-weight: 500;
-    padding: 10px 20px;
-    border-radius: 8px;
-    background: rgba(255,255,255,0.05);
-    transition: all 0.3s ease;
-}
-
-.top-nav a:hover,
-.top-nav a.active {
-    background: linear-gradient(90deg, #2563eb, #4f46e5);
-    box-shadow: 0 4px 15px rgba(37,99,235,0.5);
-}
-
-/* Card Grid */
-.card-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-    gap: 22px;
-    margin-top: 20px;
-}
-
-.card {
-    background: linear-gradient(145deg, rgba(37,99,235,0.15), rgba(79,70,229,0.15));
-    border-radius: 12px;
-    padding: 22px;
-    text-align: center;
-    transition: all 0.3s ease;
-    font-weight: 500;
-    color: white;
-    backdrop-filter: blur(8px);
-}
-
-.card:hover {
-    background: linear-gradient(145deg, rgba(37,99,235,0.25), rgba(79,70,229,0.25));
-    transform: translateY(-6px) scale(1.02);
-    box-shadow: 0 12px 20px rgba(37,99,235,0.4);
-}
-
-/* Floating shapes for animation */
-.floating-shape {
-    position: absolute;
-    border-radius: 50%;
-    opacity: 0.15;
-    animation: float 20s linear infinite;
-}
-
-@keyframes float {
-    0% { transform: translateY(0) translateX(0); }
-    50% { transform: translateY(-50px) translateX(30px); }
-    100% { transform: translateY(0) translateX(0); }
-}
-
-.page-title {
-    text-align: center;
-    font-size: 28px;
-    font-weight: 600;
-    text-shadow: 0 0 6px rgba(255,255,255,0.4);
-}
-
-/* Buttons */
-.btn-light {
-    color: #0f172a;
-    font-weight: 500;
-    transition: 0.3s;
-}
-
-.btn-light:hover {
-    color: #fff;
-    background: linear-gradient(90deg, #2563eb, #4f46e5);
-    box-shadow: 0 0 12px rgba(37,99,235,0.6);
-}
-
-/* Responsive */
-@media(max-width: 768px) {
-    .top-nav { gap: 10px; }
-    .card-grid { gap: 15px; }
-}
-</style>
 
 <div class="dashboard-wrapper">
 
     <!-- Floating shapes -->
-    <div class="floating-shape" style="width:150px;height:150px;background:#2563eb;top:50px;left:50px;"></div>
-    <div class="floating-shape" style="width:100px;height:100px;background:#4f46e5;bottom:80px;right:40px;"></div>
+    <div class="floating-shape" style="width:150px;height:150px;background:#F58634;top:50px;left:50px;"></div>
+    <div class="floating-shape" style="width:100px;height:100px;background:#ff9126;bottom:80px;right:40px;"></div>
 
     <!-- Welcome Message -->
     <h2 class="page-title" data-aos="fade-down">Welcome, {{ request.user.username }} 👋</h2>
 
     <!-- Top Navigation Tabs -->
     <div class="top-nav" data-aos="fade-up" data-aos-delay="200">
-         <a href="{% url 'courses' %}" class="{% if request.path == '/courses/' %}active{% endif %}">📚 Courses</a>
+        <a href="{% url 'courses' %}" class="{% if request.path == '/courses/' %}active{% endif %}">📚 Courses</a>
         <a href="{% url 'assignments' %}" class="{% if request.path == '/assignments/' %}active{% endif %}">📝 Assignments</a>
         <a href="{% url 'dashboard' %}" class="{% if request.path == '/dashboard/' %}active{% endif %}">📄 Results</a>
         <a href="{% url 'profile' %}" class="{% if request.path == '/profile/' %}active{% endif %}">👤 Profile</a>
         <a href="{% url 'chat' user_id=request.user.id %}" class="{% if '/chat/' in request.path %}active{% endif %}">💬 Chat</a>
     </div>
 
-    <!-- Courses Grid (default section) -->
+    <!-- Courses Grid -->
     <div class="card-grid" data-aos="fade-up" data-aos-delay="300">
         {% if courses %}
             {% for course in courses %}
-                <div class="card" data-aos="fade-up" data-aos-delay="{{ forloop.counter0|add:"50" }}">
-                    <h5 class="mb-2">{{ course.title }}</h5>
-                    <p class="small text-muted">{{ course.department }}</p>
-                    <p class="mt-2">{{ course.description|truncatechars:120 }}</p>
-                    <a href="{% url 'course_detail' course.id %}" class="btn btn-sm btn-light mt-3">Open</a>
+                <div class="card" data-aos="fade-up" data-aos-delay="{{ forloop.counter0|add:'50' }}">
+                    <h5>{{ course.title }}</h5>
+                    <p class="small">{{ course.department }}</p>
+                    <p>{{ course.description|truncatechars:120 }}</p>
+                    <a href="{% url 'course_detail' course.id %}" class="btn btn-light mt-3">Open</a>
                 </div>
             {% endfor %}
         {% else %}

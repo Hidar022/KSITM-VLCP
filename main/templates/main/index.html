@@ -11,7 +11,7 @@
 }
 .hover-card:hover {
     transform: scale(1.05);
-    box-shadow: 0 15px 25px rgba(245, 134, 52, 0.4);
+    box-shadow: 0 15px 25px rgba(245, 134, 52, 0.3);
 }
 
 /* Hero Button Pulse */
@@ -54,10 +54,50 @@
     50% { transform: translateY(-25px) translateX(15px); }
     100% { transform: translateY(0) translateX(0); }
 }
+
+/* Hero Section Light Theme */
+.hero-section {
+    background: linear-gradient(135deg, #fefefe 0%, #f0f4f8 100%);
+    overflow: hidden;
+    color: #0f172a;
+}
+
+/* About, Courses, Collab Sections */
+.about-section,
+.courses-section,
+.collab-section {
+    background: #ffffff;
+    color: #0f172a;
+}
+
+/* Cards Background & Text */
+.card.hover-card {
+    background: #f8f9fa !important;
+    color: #0f172a !important;
+}
+.card.hover-card .card-body {
+    background: rgba(248, 249, 250, 0.85) !important;
+}
+
+/* Buttons */
+.btn-warning {
+    background-color: #F58634;
+    border-color: #F58634;
+}
+.btn-warning:hover {
+    background-color: #e07a1f;
+    border-color: #e07a1f;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .hero-section h1 { font-size: 2rem; }
+    .hero-section p { font-size: 1rem; }
+}
 </style>
 
 <!-- Hero Section -->
-<section class="container-fluid py-5 position-relative" style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); overflow:hidden;">
+<section class="container-fluid py-5 position-relative hero-section">
     <!-- Floating Shapes -->
     <div class="floating-shape" style="width:120px;height:120px;background: rgba(245,134,52,0.2);border-radius:50%;top:10%;left:5%;animation:float1 10s infinite alternate;"></div>
     <div class="floating-shape" style="width:80px;height:80px;background: rgba(56,189,248,0.2);border-radius:50%;top:30%;right:10%;animation:float2 12s infinite alternate;"></div>
@@ -66,9 +106,9 @@
     <div class="container position-relative">
         <div class="row align-items-center">
             <!-- Left Text -->
-            <div class="col-md-6 text-white" data-aos="fade-right" data-aos-duration="1200">
+            <div class="col-md-6" data-aos="fade-right" data-aos-duration="1200">
                 <h1 class="fw-bold display-4 mb-3">Empower Your Learning <span style="color:#F58634;">Journey</span></h1>
-                <p class="lead text-light">
+                <p class="lead mb-3">
                     KSITM Virtual Learning & Collaboration Platform connects students and lecturers 
                     for seamless academic growth — anytime, anywhere. Learn, share, and collaborate effortlessly.
                 </p>
@@ -86,8 +126,8 @@
 </section>
 
 <!-- About Section -->
-<section class="py-5" style="background-color:#111827;">
-    <div class="container text-white">
+<section class="py-5 about-section">
+    <div class="container">
         <div class="row align-items-center">
             <!-- Image -->
             <div class="col-md-5 mb-4 mb-md-0" data-aos="fade-right">
@@ -96,7 +136,7 @@
             <!-- Text -->
             <div class="col-md-7" data-aos="fade-left">
                 <h2 class="fw-bold mb-3">Why KSITM VLCP?</h2>
-                <p class="text-light mb-3">
+                <p class="mb-3">
                     Experience a modern, interactive learning platform that empowers students and lecturers 
                     to collaborate beyond the traditional classroom. Access lectures, submit assignments, 
                     participate in discussions, and grow together — all in one place.
@@ -112,37 +152,38 @@
 </section>
 
 <!-- Courses Section -->
-<section class="py-5" style="background-color:#0f172a;">
-    <div class="container text-white text-center">
+<section class="py-5 courses-section">
+    <div class="container text-center">
         <h2 class="fw-bold mb-3" data-aos="fade-up">Explore Popular Courses</h2>
-        <p class="text-light mb-5" data-aos="fade-up" data-aos-delay="200">
+        <p class="mb-5" data-aos="fade-up" data-aos-delay="200">
             Courses taught by experienced instructors to boost your skills.
         </p>
         <div class="row row-cols-1 row-cols-md-3 g-4">
+            {% comment %} Course Cards {% endcomment %}
             <div class="col" data-aos="zoom-in">
-                <div class="card h-100 border-0 shadow-lg hover-card bg-gray-900 text-white position-relative overflow-hidden">
+                <div class="card h-100 border-0 shadow-lg hover-card position-relative overflow-hidden">
                     <img src="{% static 'images/course_it.png' %}" class="card-img-top rounded-top" alt="IT Course">
-                    <div class="card-body position-relative" style="background: rgba(0,0,0,0.5);">
-                        <h5 class="fw-bold">Introduction to Computing</h5>
-                        <p class="text-light small">Learn the basics of computing, hardware, and software systems.</p>
+                    <div class="card-body position-relative">
+                        <h5 class="fw-bold text-dark">Introduction to Computing</h5>
+                        <p class="small text-dark">Learn the basics of computing, hardware, and software systems.</p>
                     </div>
                 </div>
             </div>
             <div class="col" data-aos="zoom-in" data-aos-delay="200">
-                <div class="card h-100 border-0 shadow-lg hover-card bg-gray-900 text-white position-relative overflow-hidden">
+                <div class="card h-100 border-0 shadow-lg hover-card position-relative overflow-hidden">
                     <img src="{% static 'images/course_network.png' %}" class="card-img-top rounded-top" alt="Networking">
-                    <div class="card-body position-relative" style="background: rgba(0,0,0,0.5);">
-                        <h5 class="fw-bold">Networking & Cybersecurity</h5>
-                        <p class="text-light small">Understand network structures and how to protect them from threats.</p>
+                    <div class="card-body position-relative">
+                        <h5 class="fw-bold text-dark">Networking & Cybersecurity</h5>
+                        <p class="small text-dark">Understand network structures and how to protect them from threats.</p>
                     </div>
                 </div>
             </div>
             <div class="col" data-aos="zoom-in" data-aos-delay="400">
-                <div class="card h-100 border-0 shadow-lg hover-card bg-gray-900 text-white position-relative overflow-hidden">
+                <div class="card h-100 border-0 shadow-lg hover-card position-relative overflow-hidden">
                     <img src="{% static 'images/course_business.png' %}" class="card-img-top rounded-top" alt="Business">
-                    <div class="card-body position-relative" style="background: rgba(0,0,0,0.5);">
-                        <h5 class="fw-bold">Business Management</h5>
-                        <p class="text-light small">Develop leadership, planning, and decision-making skills.</p>
+                    <div class="card-body position-relative">
+                        <h5 class="fw-bold text-dark">Business Management</h5>
+                        <p class="small text-dark">Develop leadership, planning, and decision-making skills.</p>
                     </div>
                 </div>
             </div>
@@ -152,34 +193,34 @@
 </section>
 
 <!-- Collaboration Section -->
-<section class="py-5" style="background-color:#1e293b;">
+<section class="py-5 collab-section">
     <div class="container">
-        <div class="text-center mb-5 text-white">
+        <div class="text-center mb-5">
             <h2 class="fw-bold" data-aos="fade-up">Collaboration & Communication</h2>
-            <p class="text-light" data-aos="fade-up" data-aos-delay="200">
+            <p data-aos="fade-up" data-aos-delay="200">
                 Connect with lecturers and classmates in real-time and work together seamlessly.
             </p>
         </div>
-        <div class="row g-4 text-center text-white">
+        <div class="row g-4 text-center">
             <div class="col-md-4" data-aos="fade-right">
-                <div class="card border-0 shadow-lg hover-card h-100 bg-gray-900 p-4">
+                <div class="card border-0 shadow-lg hover-card h-100 p-4">
                     <img src="{% static 'images/chat_icon.png' %}" alt="Chat" class="mb-3" style="width:80px;">
-                    <h5 class="fw-bold">Discussion Chat</h5>
-                    <p class="text-light">Engage in academic discussions and group chats in real-time.</p>
+                    <h5 class="fw-bold text-dark">Discussion Chat</h5>
+                    <p class="text-dark">Engage in academic discussions and group chats in real-time.</p>
                 </div>
             </div>
             <div class="col-md-4" data-aos="fade-up">
-                <div class="card border-0 shadow-lg hover-card h-100 bg-gray-900 p-4">
+                <div class="card border-0 shadow-lg hover-card h-100 p-4">
                     <img src="{% static 'images/group_icon.png' %}" alt="Group Collaboration" class="mb-3" style="width:80px;">
-                    <h5 class="fw-bold">Group Collaboration</h5>
-                    <p class="text-light">Work together on assignments and projects effortlessly.</p>
+                    <h5 class="fw-bold text-dark">Group Collaboration</h5>
+                    <p class="text-dark">Work together on assignments and projects effortlessly.</p>
                 </div>
             </div>
             <div class="col-md-4" data-aos="fade-left">
-                <div class="card border-0 shadow-lg hover-card h-100 bg-gray-900 p-4">
+                <div class="card border-0 shadow-lg hover-card h-100 p-4">
                     <img src="{% static 'images/announcement_icon.png' %}" alt="Announcements" class="mb-3" style="width:80px;">
-                    <h5 class="fw-bold">Announcements Board</h5>
-                    <p class="text-light">Stay updated with lessons, deadlines, and school notices.</p>
+                    <h5 class="fw-bold text-dark">Announcements Board</h5>
+                    <p class="text-dark">Stay updated with lessons, deadlines, and school notices.</p>
                 </div>
             </div>
         </div>

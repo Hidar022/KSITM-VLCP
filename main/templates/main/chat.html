@@ -16,24 +16,27 @@
 </head>
 
 <body class="bg-ksitm-dark text-ksitm-txt antialiased">
-  <!-- Floating decorative shapes behind everything -->
+
+  <!-- Floating decorative shapes -->
   <div class="floating-shape shape1" aria-hidden="true"></div>
   <div class="floating-shape shape2" aria-hidden="true"></div>
 
   <div class="min-h-screen flex flex-col lg:flex-row p-4 gap-4">
+
     <!-- Sidebar -->
-    <aside class="w-full lg:w-80 rounded-2xl p-5 relative overflow-hidden z-10" data-aos="fade-right" aria-label="Contacts">
+    <aside class="w-full lg:w-80 rounded-2xl p-5 relative overflow-hidden z-10 bg-ks-panel" data-aos="fade-right" aria-label="Contacts">
       <div class="flex items-center gap-3 mb-4">
-        <img src="{% static 'images/ksitm_logo.png' %}" class="w-12 h-12 rounded-lg border border-white-20" alt="KSITM logo">
+        <img src="{% static 'images/ksitm_logo.png' %}" class="w-12 h-12 rounded-lg border border-gray-200" alt="KSITM logo">
         <div>
-          <div class="text-white font-bold">KSITM • VLCP</div>
-          <div class="text-sm text-slate-300">Course portal chat</div>
+          <div class="text-ks-text font-bold">KSITM • VLCP</div>
+          <div class="text-sm text-ks-subtext">Course portal chat</div>
         </div>
       </div>
 
       <div class="mb-3">
         <label for="searchUsers" class="sr-only">Search users</label>
-        <input id="searchUsers" name="searchUsers" aria-label="Search users" placeholder="Search users..." class="search-input" />
+        <input id="searchUsers" name="searchUsers" aria-label="Search users" placeholder="Search users..."
+               class="search-input w-full border border-ks-border rounded-lg px-3 py-2 text-ks-text focus:outline-none focus:ring-2 focus:ring-ks-accent" />
       </div>
 
       <nav id="usersList" class="space-y-2 max-h-[60vh] overflow-auto pr-2" role="navigation" aria-label="Users list">
@@ -41,25 +44,26 @@
           <a href="{% url 'chat' u.id %}" class="user-entry {% if other_user and other_user.id == u.id %}user-active{% endif %}">
             <div class="user-avatar">{{ u.username|slice:":1"|upper }}</div>
             <div class="flex-1">
-              <div class="text-white font-semibold">{{ u.username }}</div>
-              <div class="text-xs text-slate-400">Last active • {{ u.last_login|default:"-" }}</div>
+              <div class="font-semibold text-ks-text">{{ u.username }}</div>
+              <div class="text-xs text-ks-subtext">Last active • {{ u.last_login|default:"-" }}</div>
             </div>
           </a>
         {% empty %}
-          <div class="text-slate-400 p-2">No users found</div>
+          <div class="text-ks-subtext p-2">No users found</div>
         {% endfor %}
       </nav>
     </aside>
 
     <!-- Chat panel -->
-    <main class="flex-1 rounded-2xl panel-bg p-4 flex flex-col shadow-xl z-20" data-aos="fade-left" role="main" aria-label="Chat panel">
+    <main class="flex-1 rounded-2xl panel-bg p-4 flex flex-col shadow-xl z-20 bg-ks-panel" data-aos="fade-left" role="main" aria-label="Chat panel">
+
       <!-- Header -->
-      <header class="flex items-center justify-between pb-3 border-b border-white-06">
+      <header class="flex items-center justify-between pb-3 border-b border-ks-border">
         <div class="flex items-center gap-3">
           <div class="header-avatar">{{ other_user.username|slice:":1"|upper }}</div>
           <div>
-            <div class="text-white font-bold">{{ other_user.username }}</div>
-            <div class="text-sm text-slate-400">Role: {{ other_user.profile.role|default:"user" }}</div>
+            <div class="font-bold text-ks-text">{{ other_user.username }}</div>
+            <div class="text-sm text-ks-subtext">Role: {{ other_user.profile.role|default:"user" }}</div>
           </div>
         </div>
 
@@ -67,73 +71,56 @@
           <button id="startAudioCall" class="btn-ghost" title="Start voice call" aria-label="Start voice call">🔊</button>
           <button id="startVideoCall" class="btn-ghost" title="Start video call" aria-label="Start video call">🎥</button>
           <button id="endCallBtn" class="btn-ghost hidden" title="End call" aria-hidden="true">⛔</button>
-          <button id="endVideoCallBtn" class="btn-ghost hidden" title="End video call">
-            ⛔🎥
-          </button>
-
+          <button id="endVideoCallBtn" class="btn-ghost hidden" title="End video call">⛔🎥</button>
         </div>
-
       </header>
 
-      <!-- Messages area -->
-      <section id="messages" class="flex-1 overflow-auto py-4 px-2 space-y-4" aria-live="polite" tabindex="0">
-        {% if messages %}
-          {% for m in messages %}
-            <div class="w-full flex {% if m.sender.id == request.user.id %} justify-end {% else %} justify-start {% endif %}">
-              <article class="message-card {% if m.sender.id == request.user.id %}message-me{% else %}message-other{% endif %}">
-                {% if m.voice_note %}
-                  <audio controls src="{{ m.voice_note.url }}"></audio>
-
-                {% elif m.file %}
-                  <a class="attachment" href="{{ m.file.url }}" download>{{ m.file.name }}</a>
-
-                {% elif m.audio %}
-                  <audio controls src="{{ m.audio.url }}"></audio>
-
-                {% elif m.attachment %}
-                  <a class="attachment" href="{{ m.attachment.url }}" download>{{ m.attachment.name }}</a>
-
-                {% else %}
-                  <div class="message-text">{{ m.text|default:m.content|linebreaksbr }}</div>
-                {% endif %}
-
-                <div class="message-meta">{{ m.timestamp|date:"M d, H:i" }}</div>
-              </article>
+   <!-- Messages area -->
+<section id="messages" class="flex-1 overflow-auto py-4 px-2 space-y-4" aria-live="polite" tabindex="0">
+  {% if messages %}
+    {% for m in messages %}
+      <div class="w-full flex {% if m.sender.id == request.user.id %} justify-end {% else %} justify-start {% endif %}">
+        <article class="message-card {% if m.sender.id == request.user.id %}message-me{% else %}message-other{% endif %}">
+          
+          {% if m.voice_note or m.audio %}
+            <div class="custom-audio-player {% if m.sender.id == request.user.id %}sent{% else %}received{% endif %}" data-src="{{ m.voice_note.url|default:m.audio.url }}">
+              <button class="play-pause-btn">▶️</button>
+              <div class="progress-container">
+                <div class="progress-bar"></div>
+              </div>
+              <span class="duration">0:00</span>
             </div>
-          {% endfor %}
-        {% else %}
-          <div class="w-full text-center text-slate-400">No messages yet — say hi 👋</div>
-        {% endif %}
-      </section>
+          {% elif m.file %}
+            <a class="attachment" href="{{ m.file.url }}" download>{{ m.file.name }}</a>
+          {% elif m.attachment %}
+            <a class="attachment" href="{{ m.attachment.url }}" download>{{ m.attachment.name }}</a>
+          {% else %}
+            <div class="message-text">{{ m.text|default:m.content|linebreaksbr }}</div>
+          {% endif %}
+
+          <div class="message-meta">{{ m.timestamp|date:"M d, H:i" }}</div>
+        </article>
+      </div>
+    {% endfor %}
+  {% else %}
+    <div class="w-full text-center text-ks-subtext">No messages yet — say hi 👋</div>
+  {% endif %}
+</section>
 
       <!-- Input area -->
-      <footer class="mt-3 border-t border-white-06 pt-3 flex items-center gap-3">
+      <footer class="mt-3 border-t border-ks-border pt-3 flex items-center gap-3">
         <div class="flex items-center gap-2">
           <button id="recordBtn" class="tool-btn">🎙</button>
-
           <label for="fileInput" class="sr-only">Attach file</label>
           <input id="fileInput" type="file" class="hidden" />
-          <input 
-            id="audioInput"
-            type="file"
-            name="audio"
-            accept="audio/*"
-            class="hidden"
-          />
-
-
+          <input id="audioInput" type="file" name="audio" accept="audio/*" class="hidden" />
           <button id="attachBtn" class="tool-btn">📎</button>
         </div>
 
-        <!-- FIXED TEXTAREA (restored to your design) -->
         <div class="flex-1">
-          <textarea 
-              id="messageInput"
-              rows="1"
-              name="content"
-              class="message-input w-full bg-[#0f172a] text-white px-4 py-3 rounded-xl border border-white-10 focus:outline-none resize-none"
-              placeholder="Type a message..."
-          ></textarea>
+          <textarea id="messageInput" rows="1" name="content"
+              class="message-input w-full bg-ks-bg text-ks-text px-4 py-3 rounded-xl border border-ks-border focus:outline-none focus:ring-2 focus:ring-ks-accent resize-none"
+              placeholder="Type a message..."></textarea>
         </div>
 
         <div>
@@ -149,25 +136,23 @@
     <video id="remoteVideo" autoplay playsinline class="remote-video"></video>
   </div>
 
-  <div id="incomingCallBox" class="hidden fixed inset-0 bg-black/70 flex items-center justify-center z-50">
-  <div class="bg-slate-900 p-6 rounded-xl text-center space-y-4">
-    <h2 class="text-white text-lg">Incoming call…</h2>
-    <div class="flex gap-4 justify-center">
-      <button id="acceptCall" class="px-4 py-2 bg-green-600 rounded">Accept</button>
-      <button id="rejectCall" class="px-4 py-2 bg-red-600 rounded">Reject</button>
+  <div id="incomingCallBox" class="hidden fixed inset-0 bg-black/20 flex items-center justify-center z-50">
+    <div class="bg-white p-6 rounded-xl text-center space-y-4 shadow-lg">
+      <h2 class="text-ks-text text-lg">Incoming call…</h2>
+      <div class="flex gap-4 justify-center">
+        <button id="acceptCall" class="px-4 py-2 bg-green-600 text-white rounded">Accept</button>
+        <button id="rejectCall" class="px-4 py-2 bg-red-600 text-white rounded">Reject</button>
+      </div>
     </div>
   </div>
-</div>
-
 
   <script>
-  AOS.init({ once:false, duration:700, easing:'ease-in-out' });
-  const KS_CSRF = "{{ csrf_token }}";
-  const CURRENT_USER_ID = "{{ request.user.id }}";
-  const OTHER_USER_ID = {% if other_user %}{{ other_user.id }}{% else %}null{% endif %};
-  const WS_SCHEME = (location.protocol === 'https:') ? 'wss' : 'ws';
-</script>
-
+    AOS.init({ once:false, duration:700, easing:'ease-in-out' });
+    const KS_CSRF = "{{ csrf_token }}";
+    const CURRENT_USER_ID = "{{ request.user.id }}";
+    const OTHER_USER_ID = {% if other_user %}{{ other_user.id }}{% else %}null{% endif %};
+    const WS_SCHEME = (location.protocol === 'https:') ? 'wss' : 'ws';
+  </script>
 
   <script src="{% static 'js/chat.js' %}"></script>
   <audio id="remoteAudio" autoplay></audio>
