@@ -2,7 +2,6 @@
 {% load static %}
 {% load widget_tweaks %}
 
-{% with hide_footer=True %}
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/auth.css' %}">
 {% endblock %}
@@ -31,9 +30,18 @@
         </div>
 
         <!-- Login Form -->
-        <form method="POST">
+        <form method="POST" action="{% url 'login' %}">
+
             {% csrf_token %}
-            <input type="hidden" name="role" id="roleInput" value="student">
+            <input type="hidden" name="role" id="roleInput" value="student" autocomplete="off">
+
+            {% if form.non_field_errors %}
+            <div class="form-errors">
+                {% for error in form.non_field_errors %}
+                    <p>{{ error }}</p>
+                {% endfor %}
+            </div>
+            {% endif %}
 
             <label>Username</label>
             {{ form.username|add_class:"form-control" }}
@@ -55,7 +63,6 @@
     </div>
 </div>
 
-<!-- Role switching script -->
 <script>
     function switchRole(role) {
         document.getElementById("roleInput").value = role;
@@ -69,4 +76,3 @@
 </script>
 
 {% endblock %}
-{% endwith %}

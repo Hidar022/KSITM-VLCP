@@ -15,6 +15,7 @@ from .forms import RegisterForm, RoleLoginForm
 from .forms_uploads import CourseMaterialForm, AssignmentForm, StudentForm
 from django.db.models import Q
 from datetime import datetime
+from django.views.decorators.csrf import csrf_protect
 
 
 # ===================== AUTHENTICATION ===================== #
@@ -42,44 +43,42 @@ def register_view(request):
     return render(request, "main/register.html", {"form": form})
 
 
+
+@csrf_protect
 def role_login_view(request):
-    if request.method == "POST":
-        form = RoleLoginForm(request, data=request.POST)
-        if form.is_valid():
-            username = form.cleaned_data['username']
-            password = form.cleaned_data['password']
-            role = (form.cleaned_data['role'] or "").strip().lower()
-            lecturer_id = form.cleaned_data.get('lecturer_id') or None
+    form = RoleLoginForm(request, data=request.POST) if request.method == "POST" else RoleLoginForm()
 
-            user = authenticate(username=username, password=password)
-            if not user:
-                form.add_error(None, "Invalid credentials.")
+    if request.method == "POST" and form.is_valid():
+        username = form.cleaned_data['username']
+        password = form.cleaned_data['password']
+        role = (form.cleaned_data.get('role') or "").strip().lower()
+        lecturer_id = form.cleaned_data.get('lecturer_id') or None
+
+        user = authenticate(username=username, password=password)
+        if not user:
+            form.add_error(None, "Invalid credentials.")
+            return render(request, 'main/role_login.html', {'form': form})
+
+        profile = getattr(user, "profile", None)
+        if profile is None:
+            form.add_error(None, "Profile missing for this user. Ask admin to fix.")
+            return render(request, 'main/role_login.html', {'form': form})
+
+        # Role check
+        if (profile.role or "").strip().lower() != role:
+            form.add_error(None, "Role mismatch.")
+            return render(request, 'main/role_login.html', {'form': form})
+
+        # Lecturer ID check
+        if role == "lecturer":
+            if not lecturer_id or str(lecturer_id).strip() != str(profile.lecturer_id):
+                form.add_error(None, "Lecturer ID mismatch.")
                 return render(request, 'main/role_login.html', {'form': form})
 
-            profile = getattr(user, "profile", None)
-            if profile is None:
-                form.add_error(None, "Profile missing for this user. Ask admin to fix.")
-                return render(request, 'main/role_login.html', {'form': form})
+        login(request, user)
+        return redirect("dashboard")
 
-            # compare normalized roles
-            if (profile.role or "").strip().lower() != role:
-                form.add_error(None, "Role mismatch.")
-                return render(request, 'main/role_login.html', {'form': form})
-
-            if role == "lecturer":
-                # require lecturer_id if you configured it
-                if not lecturer_id or str(lecturer_id).strip() != str(profile.lecturer_id):
-                    form.add_error(None, "Lecturer ID mismatch.")
-                    return render(request, 'main/role_login.html', {'form': form})
-
-            login(request, user)
-            # redirect to common dashboard view which will route by role
-            return redirect("dashboard")
-    else:
-        form = RoleLoginForm()
     return render(request, 'main/role_login.html', {'form': form})
-
-
 @require_POST
 def logout_view(request):
     logout(request)
