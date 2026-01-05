@@ -1,6 +1,7 @@
 from pathlib import Path
 import os
 from urllib.parse import urlparse
+import dj_database_url
 
 # ------------------------------
 # BASE DIR
@@ -22,8 +23,8 @@ DEBUG = os.environ.get("DEBUG", "True") == "True" if not RAILWAY else False
 # ------------------------------
 if RAILWAY:
     # Production on Railway
-    ALLOWED_HOSTS = [".railway.app"]
-    CSRF_TRUSTED_ORIGINS = ["https://*.railway.app"]
+    ALLOWED_HOSTS = ["ksitm-vlcp-production.up.railway.app"]
+    CSRF_TRUSTED_ORIGINS = ["https://ksitm-vlcp-production.up.railway.app"]
 else:
     # Local development
     ALLOWED_HOSTS = os.environ.get("ALLOWED_HOSTS", "127.0.0.1,localhost").split(",")
@@ -64,7 +65,7 @@ MIDDLEWARE = [
     "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
-    "django.middleware.csrf.CsrfViewMiddleware",  # CSRF protection
+    "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
@@ -96,8 +97,6 @@ ASGI_APPLICATION = "ksitm_vlcp.asgi.application"
 # ------------------------------
 # DATABASE
 # ------------------------------
-import dj_database_url
-
 DATABASES = {
     "default": dj_database_url.config(default=f"sqlite:///{BASE_DIR / 'db.sqlite3'}")
 }
@@ -167,6 +166,6 @@ LOGIN_REDIRECT_URL = "/dashboard/"
 LOGOUT_REDIRECT_URL = "/login/"
 
 # ------------------------------
-# CORS (optional)
+# CORS
 # ------------------------------
-CORS_ALLOW_ALL_ORIGINS = True  # for testing, can restrict later
+CORS_ALLOW_ALL_ORIGINS = True
