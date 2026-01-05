@@ -4,9 +4,9 @@
 
 /* Body */
 body {
-    background: #0f172a; /* blue-dark background */
+    background: #f5f5f5; /* light gray background for contrast */
     font-family: 'Poppins', sans-serif;
-    color: white;
+    color: #111;
     margin: 0;
     padding: 0;
 }
@@ -14,9 +14,9 @@ body {
 /* Dashboard Wrapper */
 .dashboard-wrapper {
     display: flex;
-    flex-direction: column; /* Cards on top */
+    flex-direction: column; 
     min-height: 100vh;
-    padding-top: 80px; /* leave space for navbar */
+    padding-top: 80px; 
     align-items: center;
     overflow-x: hidden;
 }
@@ -26,8 +26,40 @@ body {
     font-size: 28px;
     font-weight: 600;
     margin-bottom: 15px;
-    text-shadow: 0 0 6px rgba(255,255,255,0.4);
     text-align: center;
+    color: #111;
+}
+
+/* Top Navigation Tabs */
+.top-nav {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 15px;
+    margin-bottom: 25px;
+}
+
+.top-nav a {
+    text-decoration: none;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-weight: 500;
+    background: #fff;
+    color: #111;
+    border: 1px solid #ddd;
+    transition: all 0.3s ease;
+}
+
+.top-nav a:hover {
+    background: #F58634;
+    color: #fff;
+    box-shadow: 0 4px 12px rgba(245,134,52,0.4);
+}
+
+.top-nav a.active {
+    background: linear-gradient(90deg, #F58634, #ff9126);
+    color: #fff;
+    box-shadow: 0 4px 15px rgba(245,134,52,0.5);
 }
 
 /* Card Grid */
@@ -43,83 +75,55 @@ body {
 
 /* Cards */
 .card {
-    background: rgba(37,99,235,0.2); /* blue-ish background */
+    background: #fff;
     border-radius: 12px;
     padding: 22px;
-    border: 1px solid rgba(255,255,255,0.15);
     text-align: center;
     transition: all 0.3s ease;
-    color: white;
+    color: #111;
     font-weight: 500;
-    backdrop-filter: blur(8px);
-    text-decoration: none; /* for <a> cards */
+    border: 1px solid #ddd;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+}
+
+.card h5 {
+    color: #F58634;
+}
+
+.card p {
+    color: #333;
 }
 
 .card:hover {
-    background: rgba(37,99,235,0.3);
+    background: linear-gradient(145deg, #F58634, #ff9126);
+    color: #fff;
     transform: translateY(-6px) scale(1.02);
-    box-shadow: 0 12px 20px rgba(37,99,235,0.4);
+    box-shadow: 0 12px 20px rgba(245,134,52,0.4);
 }
 
 /* Buttons */
-.btn-light {
-    color: #0f172a;
-    font-weight: 500;
-    transition: 0.3s;
-}
-
-.btn-light:hover {
+.btn-light, .btn {
+    background: #F58634;
     color: #fff;
-    background: linear-gradient(90deg, #2563eb, #4f46e5);
-    box-shadow: 0 0 12px rgba(37,99,235,0.6);
-}
-
-/* ===========================
-   Optional Sidebar (if used)
-=========================== */
-.sidebar {
-    width: 260px;
-    background: rgba(255,255,255,0.06);
-    backdrop-filter: blur(14px);
-    padding: 25px 18px;
-    border-right: 1px solid rgba(255,255,255,0.15);
-}
-
-.sidebar .logo img {
-    width: 85px;
-    height: 85px;
-    border-radius: 50%;
-    border: 2px solid rgba(255,255,255,0.3);
-    animation: rotate 6s linear infinite;
-}
-
-@keyframes rotate {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
-}
-
-.menu-item {
-    display: block;
-    margin: 12px 0;
-    padding: 10px;
-    border-radius: 6px;
-    color: white;
     font-weight: 500;
-    transition: 0.3s;
-    text-decoration: none;
+    border-radius: 6px;
+    padding: 10px 18px;
+    border: none;
+    cursor: pointer;
+    transition: all 0.3s ease;
 }
 
-.menu-item:hover {
-    background: rgba(37,99,235,0.4);
+.btn-light:hover, .btn:hover {
+    background: linear-gradient(90deg, #F58634, #ff9126);
+    box-shadow: 0 0 12px rgba(245,134,52,0.6);
+    color: #fff;
 }
 
-/* ===========================
-   Floating Shapes Animation
-=========================== */
+/* Floating Shapes */
 .floating-shape {
     position: absolute;
     border-radius: 50%;
-    opacity: 0.15;
+    opacity: 0.1;
     animation: float 20s linear infinite;
 }
 
@@ -129,43 +133,30 @@ body {
     100% { transform: translateY(0) translateX(0); }
 }
 
-/* ===========================
-   Footer Styles
-=========================== */
-.footer {
-    position: sticky;
-    bottom: 0;
+/* Tables */
+.table-responsive {
+    overflow-x: auto;
+    margin-bottom: 40px;
+}
+
+table {
     width: 100%;
-    background-color: #222;
-    color: #fff;
-    text-align: center;
-    padding: 15px 0;
-    transition: transform 0.4s ease;
-    z-index: 1000;
+    border-collapse: collapse;
 }
 
-body.scrolled .footer {
-    transform: translateY(0);
+table th, table td {
+    padding: 12px;
+    text-align: left;
+    border-bottom: 1px solid #eee;
+    color: #111;
 }
 
-body:not(.scrolled) .footer {
-    transform: translateY(100%);
+table th {
+    color: #F58634;
 }
 
-/* ===========================
-   Responsive
-=========================== */
+/* Responsive */
 @media (max-width: 768px) {
-    .dashboard-wrapper {
-        flex-direction: column;
-    }
-    .sidebar {
-        width: 100%;
-        height: auto;
-        position: relative;
-        border-right: none;
-    }
-    .main-content {
-        padding: 15px;
-    }
+    .top-nav { gap: 10px; }
+    .card-grid { gap: 15px; }
 }
