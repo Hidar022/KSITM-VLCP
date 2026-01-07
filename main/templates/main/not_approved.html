@@ -1,0 +1,29 @@
+{% extends "main/base.html" %}
+{% load static %}
+
+{% block title %}Account Pending Approval{% endblock %}
+
+{% block content %}
+<div class="auth-container">
+    <div class="auth-box">
+        <h2>⏳ Account Pending Approval</h2>
+
+        <p>
+            Your student account has been created successfully.
+        </p>
+
+        <p>
+            Please wait while the administrator reviews and approves your account.
+        </p>
+
+        <p class="text-muted">
+            You will not be able to access the dashboard until approval.
+        </p>
+
+        <form method="post" action="{% url 'logout' %}">
+            {% csrf_token %}
+            <button class="submit-btn">Logout</button>
+        </form>
+    </div>
+</div>
+{% endblock %}

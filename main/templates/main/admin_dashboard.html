@@ -8,15 +8,17 @@
 <div class="dashboard-wrapper">
 
     <!-- Logo -->
-    <div class="dashboard-logo">
-        <img src="{% static 'images/ksitm_logo.png' %}" alt="KSITM Logo">
+    <div class="dashboard-logo" data-aos="zoom-in">
+        <div class="logo-circle">
+            <img src="{% static 'images/ksitm_logo.png' %}" alt="KSITM Logo">
+        </div>
     </div>
 
     <!-- Top Navigation -->
     <div class="top-nav">
-        <a href="{% url 'dashboard' %}">📊 Overview</a>
+        <a href="{% url 'dashboard_admin' %}">📊 Overview</a>
         <a href="{% url 'add_lecturer' %}">➕ Add Lecturer</a>
-        <a href="{% url 'add_student' %}">➕ Add Student</a>
+        <a href="{% url 'dashboard_admin' %}#pending-students">🧾 Pending Students</a>
         <a href="{% url 'courses' %}">📚 Courses</a>
     </div>
 
@@ -75,7 +77,7 @@
         </div>
     </div>
 
-    <!-- Lecturers -->
+    <!-- Lecturers List -->
     <div id="lecturers" class="mt-4">
         <h4>Lecturers</h4>
         <div class="table-responsive">
@@ -83,24 +85,17 @@
                 <thead>
                     <tr>
                         <th>Username</th>
-                        <th>Department</th>
-                        <th>Action</th>
+                        <th>Email</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for lect in lecturers %}
                     <tr>
-                        <td>{{ lect.user.username }}</td>
-                        <td>{{ lect.department }}</td>
-                        <td>
-                            <form method="post" action="{% url 'delete_lecturer' lect.user.id %}">
-                                {% csrf_token %}
-                                <button class="btn btn-light" onclick="return confirm('Delete lecturer?');">Delete</button>
-                            </form>
-                        </td>
+                        <td>{{ lect.username }}</td>
+                        <td>{{ lect.email }}</td>
                     </tr>
                     {% empty %}
-                    <tr><td colspan="3">No lecturers yet.</td></tr>
+                    <tr><td colspan="2">No lecturers yet.</td></tr>
                     {% endfor %}
                 </tbody>
             </table>

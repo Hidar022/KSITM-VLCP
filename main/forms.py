@@ -6,15 +6,47 @@ from .models import DEPARTMENTS, Profile
 
 class RegisterForm(UserCreationForm):
     email = forms.EmailField(required=True, widget=forms.EmailInput(attrs={
-        'class': 'form-control', 'placeholder': 'you@example.com'
+        'class': 'form-control',
+        'placeholder': 'you@example.com'
     }))
-    department = forms.ChoiceField(choices=DEPARTMENTS, widget=forms.Select(attrs={
-        'class': 'form-control'
-    }))
+
+    department = forms.ChoiceField(
+        choices=DEPARTMENTS,
+        widget=forms.Select(attrs={'class': 'form-control'})
+    )
+
     role = forms.ChoiceField(
         choices=[('student', 'Student'), ('lecturer', 'Lecturer')],
         widget=forms.Select(attrs={'class': 'form-control'})
     )
+
+    phone = forms.CharField(
+        max_length=20,
+        widget=forms.TextInput(attrs={
+            'class': 'form-control',
+            'placeholder': '+234...'
+        })
+    )
+
+    photo = forms.ImageField(
+        required=False,
+        widget=forms.ClearableFileInput(attrs={
+            'class': 'form-control'
+        })
+    )
+
+    class Meta:
+        model = User
+        fields = (
+            'username',
+            'email',
+            'department',
+            'role',
+            'phone',
+            'photo',
+            'password1',
+            'password2',
+        )
 
     class Meta:
         model = User

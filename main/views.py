@@ -18,30 +18,46 @@ from datetime import datetime
 from django.views.decorators.csrf import csrf_protect
 
 
+from functools import wraps
+from .models import Profile 
 # ===================== AUTHENTICATION ===================== #
+
+
+def admin_required(view_func):
+    @wraps(view_func)
+    def wrapper(request, *args, **kwargs):
+        if not hasattr(request.user, 'profile') or request.user.profile.role != 'admin':
+            messages.error(request, "Access denied.")
+            return redirect('login')
+        return view_func(request, *args, **kwargs)
+    return wrapper
 
 def register_view(request):
     if request.method == "POST":
-        form = RegisterForm(request.POST)
+        form = RegisterForm(request.POST, request.FILES)
         if form.is_valid():
             user = form.save()
-            department = form.cleaned_data.get('department')
-            role = form.cleaned_data.get('role')
 
-            profile, created = Profile.objects.get_or_create(user=user)
-            profile.department = department
-            profile.role = role
-            profile.is_approved = False if role == 'lecturer' else True
+            profile = user.profile
+            profile.department = form.cleaned_data['department']
+            profile.role = form.cleaned_data['role']
+            profile.phone = form.cleaned_data['phone']
+            profile.photo = form.cleaned_data.get('photo')
+
+            if profile.role == 'student':
+                profile.is_approved = False
+
             profile.save()
 
-            messages.success(request, "Account created successfully! Please login.")
+            messages.success(
+                request,
+                "Account created successfully! Await admin approval."
+            )
             return redirect("login")
-        messages.error(request, "Fix the errors below.")
     else:
         form = RegisterForm()
 
     return render(request, "main/register.html", {"form": form})
-
 
 
 @csrf_protect
@@ -103,10 +119,11 @@ def dashboard_view(request):
 
     # Map roles -> template names (adjust names if your templates differ)
     role_to_template = {
-        "admin": "main/dashboard_admin.html",
-        "lecturer": "main/dashboard_lecturer.html",
-        "student": "main/dashboard_student.html",
+    "admin": "main/admin_dashboard.html",  # updated to match your renamed file
+    "lecturer": "main/dashboard_lecturer.html",
+    "student": "main/dashboard_student.html",
     }
+
 
     template = role_to_template.get(role)
     if not template:
@@ -149,30 +166,55 @@ def dashboard_view(request):
         }
         return render(request, template, context)
 
-
 # ===================== ADMIN FUNCTIONS ===================== #
 
+# Approve student
 @login_required
-@require_POST
 def approve_student(request, user_id):
-    profile = get_object_or_404(Profile, user__id=user_id, role="student")
-    profile.is_approved = True
-    profile.save()
-    messages.success(request, f"{profile.user.username} has been approved ✅")
-    return redirect("dashboard_admin")
+    student = get_object_or_404(Profile, pk=user_id, role='student')
+    student.is_approved = True
+    student.save()
+    messages.success(request, f"{student.user.username} has been approved!")
+    return redirect('dashboard_admin')
+
 
 
 @login_required
-@require_POST
-def delete_lecturer(request, user_id):
-    user_to_delete = User.objects.get(id=user_id)
-    if user_to_delete == request.user:
-        messages.error(request, "You cannot delete your own account.")
-        return redirect("dashboard_admin")
-    user_to_delete.delete()
-    messages.success(request, "Lecturer deleted ✅")
-    return redirect("dashboard_admin")
+def delete_lecturer_view(request, user_id):
+    """
+    Deletes a user that is a lecturer (checks is_staff or group, adjust as needed).
+    """
+    if request.method == 'POST':
+        user = get_object_or_404(User, id=user_id)
+        
+        # Optional: only delete if user is lecturer
+        if user.is_staff:  # or check user.groups if you use groups
+            username = user.username
+            user.delete()
+            messages.success(request, f"Lecturer '{username}' deleted successfully.")
+        else:
+            messages.error(request, "This user is not a lecturer.")
+    else:
+        messages.error(request, "Invalid request method.")
+    
+    return redirect('dashboard_admin')
 
+@login_required
+def delete_student(request, user_id):
+    if request.method == 'POST':
+        user = get_object_or_404(User, id=user_id)
+        
+        # Optional: make sure it's actually a student
+        if not user.is_staff:  # assuming lecturers are staff
+            username = user.username
+            user.delete()
+            messages.success(request, f"Student '{username}' deleted successfully.")
+        else:
+            messages.error(request, "This user is not a student.")
+    else:
+        messages.error(request, "Invalid request method.")
+
+    return redirect('dashboard_admin')
 
 @login_required
 def reports_admin(request):
@@ -291,10 +333,10 @@ def submit_assignment(request, assignment_id):
         file = request.FILES.get("file")
         if file:
             Submission.objects.create(
-                assignment=assignment,
-                student=request.user,
-                file=file
-            )
+            assignment=assignment,
+            student=request.user.profile,
+            file=file
+        )
             messages.success(request, "Assignment submitted successfully!")
             return redirect("student_assignments")
         messages.error(request, "Please upload a file before submitting.")
@@ -375,13 +417,23 @@ def lecturer_courses_view(request):
     courses = Course.objects.filter(lecturer=profile)
     return render(request, 'main/lecturer_courses_section.html', {'courses': courses})
 
+
 @login_required
+@admin_required
 def dashboard_admin_view(request):
     """Admin Dashboard"""
+
+    # Security check
     if not hasattr(request.user, 'profile') or request.user.profile.role != 'admin':
         return redirect('login')
-    return render(request, 'main/admin_dashboard.html')
 
+    # Fetch students or lecturers to display in dashboard
+    students = Profile.objects.all()  # Or whichever model you approve/delete
+    context = {
+        'students': students,
+    }
+
+    return render(request, 'main/admin_dashboard.html', context)
 
 @login_required
 def dashboard_lecturer_view(request):
@@ -475,19 +527,4 @@ def add_student_view(request):
     else:
         form = StudentForm()
     return render(request, 'main/add_student.html', {'form': form})
-
-def dashboard_view(request):
-    profile = request.user.profile
-
-    if profile.role == "admin":
-        return render(request, "main/dashboard_admin.html")
-
-    elif profile.role == "lecturer":
-        return render(request, "main/dashboard_lecturer.html")
-
-    elif profile.role == "student":
-        return render(request, "main/dashboard_student.html")
-
-    else:
-        return HttpResponse("Role not recognized")
 

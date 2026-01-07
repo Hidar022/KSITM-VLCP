@@ -7,59 +7,76 @@
 {% endblock %}
 
 {% block page_wrapper %}
-
-<div class="auth-container">
+<div class="auth-wrapper">
 
     <!-- Floating shapes -->
     <div class="floating-shape shape1"></div>
     <div class="floating-shape shape2"></div>
 
-    <div class="auth-box" data-aos="zoom-in">
-        <!-- Logo -->
-        <div class="logo-circle">
-            <img src="{% static 'images/ksitm_logo.png' %}" alt="KSITM Logo">
+    <!-- Unified container -->
+    <div class="auth-container">
+
+        <!-- Left info panel -->
+        <div class="auth-info" data-aos="fade-right">
+            <h2>Welcome to KSITM VLCP</h2>
+            <p>
+                Our mission is to provide a seamless virtual learning experience. 
+                Engage with your courses, interact with lecturers, and track your progress—all in one platform.
+            </p>
+            <p>
+                Explore our resources, submit assignments, and stay updated with notifications.
+            </p>
         </div>
 
-        <h3 class="mb-4">Login</h3>
+        <!-- Right login panel -->
+        <div class="auth-box" data-aos="zoom-in">
 
-        <!-- Role Tabs -->
-        <div class="role-tab-container">
-            <div id="tab-student" class="role-tab active-role" onclick="switchRole('student')">Student</div>
-            <div id="tab-lecturer" class="role-tab" onclick="switchRole('lecturer')">Lecturer</div>
-            <div id="tab-admin" class="role-tab" onclick="switchRole('admin')">Admin</div>
+            <!-- Logo -->
+            <div class="logo-circle">
+                <img src="{% static 'images/ksitm_logo.png' %}" alt="KSITM Logo">
+            </div>
+
+            <h3 class="mb-4">Login</h3>
+
+            <!-- Role Tabs -->
+            <div class="role-tab-container">
+                <div id="tab-student" class="role-tab active-role" onclick="switchRole('student')">Student</div>
+                <div id="tab-lecturer" class="role-tab" onclick="switchRole('lecturer')">Lecturer</div>
+                <div id="tab-admin" class="role-tab" onclick="switchRole('admin')">Admin</div>
+            </div>
+
+            <!-- Login Form -->
+            <form method="POST" action="{% url 'login' %}">
+                {% csrf_token %}
+                <input type="hidden" name="role" id="roleInput" value="student" autocomplete="off">
+
+                {% if form.non_field_errors %}
+                <div class="form-errors">
+                    {% for error in form.non_field_errors %}
+                        <p>{{ error }}</p>
+                    {% endfor %}
+                </div>
+                {% endif %}
+
+                <label>Username</label>
+                {{ form.username|add_class:"form-control" }}
+
+                <label>Password</label>
+                {{ form.password|add_class:"form-control" }}
+
+                <div id="lecturer-id-box">
+                    <label>Lecturer ID</label>
+                    {{ form.lecturer_id|add_class:"form-control" }}
+                </div>
+
+                <button type="submit" class="submit-btn">Login</button>
+            </form>
+
+            <p id="registerBox" class="text-link">
+                Don't have an account? <a href="{% url 'register' %}">Register</a>
+            </p>
+
         </div>
-
-        <!-- Login Form -->
-        <form method="POST" action="{% url 'login' %}">
-
-            {% csrf_token %}
-            <input type="hidden" name="role" id="roleInput" value="student" autocomplete="off">
-
-            {% if form.non_field_errors %}
-            <div class="form-errors">
-                {% for error in form.non_field_errors %}
-                    <p>{{ error }}</p>
-                {% endfor %}
-            </div>
-            {% endif %}
-
-            <label>Username</label>
-            {{ form.username|add_class:"form-control" }}
-
-            <label>Password</label>
-            {{ form.password|add_class:"form-control" }}
-
-            <div id="lecturer-id-box">
-                <label>Lecturer ID</label>
-                {{ form.lecturer_id|add_class:"form-control" }}
-            </div>
-
-            <button type="submit" class="submit-btn">Login</button>
-        </form>
-
-        <p id="registerBox" class="text-link">
-            Don't have an account? <a href="{% url 'register' %}">Register</a>
-        </p>
     </div>
 </div>
 
@@ -74,5 +91,4 @@
 
     window.onload = () => switchRole("student");
 </script>
-
 {% endblock %}

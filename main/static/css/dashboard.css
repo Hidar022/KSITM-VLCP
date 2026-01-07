@@ -101,6 +101,13 @@ body {
     box-shadow: 0 12px 20px rgba(245,134,52,0.4);
 }
 
+/* FIX: Make card text white on hover */
+.card:hover h5,
+.card:hover p,
+.card:hover .display-6 {
+    color: #ffffff !important;
+}
+
 /* Buttons */
 .btn-light, .btn {
     background: #F58634;
@@ -159,4 +166,46 @@ table th {
 @media (max-width: 768px) {
     .top-nav { gap: 10px; }
     .card-grid { gap: 15px; }
+}
+
+/* Admin Logo */
+.dashboard-logo {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 20px;
+}
+
+.logo-circle {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    background: #fff;
+    border: 4px solid #F58634;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 10px 25px rgba(245,134,52,0.35);
+    animation: pulseLogo 2.5s ease-in-out infinite;
+}
+
+.logo-circle img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 50%;
+}
+
+/* Logo animation */
+@keyframes pulseLogo {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.07); }
+    100% { transform: scale(1); }
+}
+.card {
+    text-decoration: none;
+}
+
+.card:hover h5,
+.card:hover p {
+    color: #fff !important;
 }

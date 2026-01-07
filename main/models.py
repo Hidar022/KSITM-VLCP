@@ -18,22 +18,24 @@ DEPARTMENTS = [
 # --------------------------
 class Profile(models.Model):
     ROLE_CHOICES = (
-        ('student', 'Student'),
-        ('lecturer', 'Lecturer'),
         ('admin', 'Admin'),
+        ('lecturer', 'Lecturer'),
+        ('student', 'Student'),
     )
 
     user = models.OneToOneField(User, on_delete=models.CASCADE)
-    role = models.CharField(max_length=10, choices=ROLE_CHOICES)
-    lecturer_id = models.CharField(max_length=20, blank=True, null=True)  
-    department = models.CharField(max_length=100, choices=DEPARTMENTS, blank=True, null=True)
+    role = models.CharField(max_length=20, choices=ROLE_CHOICES)
+    department = models.CharField(max_length=100)
+
+    phone = models.CharField(max_length=20)
+    photo = models.ImageField(upload_to='profiles/', blank=True, null=True)
+
+    lecturer_id = models.CharField(max_length=50, blank=True, null=True)
     is_approved = models.BooleanField(default=False)
-    profile_image = models.ImageField(upload_to='profiles/', blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return f"{self.user.username} ({self.role})"
-
+        return self.user.username
 
 # auto-create profile
 @receiver(post_save, sender=User)
