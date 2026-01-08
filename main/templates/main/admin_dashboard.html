@@ -20,6 +20,8 @@
         <a href="{% url 'add_lecturer' %}">➕ Add Lecturer</a>
         <a href="{% url 'dashboard_admin' %}#pending-students">🧾 Pending Students</a>
         <a href="{% url 'courses' %}">📚 Courses</a>
+        <a href="{% url 'admin_reports' %}">📈 Reports</a>
+
     </div>
 
     <!-- Page Title -->
@@ -89,14 +91,24 @@
                     </tr>
                 </thead>
                 <tbody>
-                    {% for lect in lecturers %}
-                    <tr>
-                        <td>{{ lect.username }}</td>
-                        <td>{{ lect.email }}</td>
-                    </tr>
-                    {% empty %}
-                    <tr><td colspan="2">No lecturers yet.</td></tr>
-                    {% endfor %}
+                 {% for lect in lecturers %}
+                <tr>
+                    <td>{{ lect.user.username }}</td>
+                    <td>{{ lect.user.email }}</td>
+                    <td>
+                        <form method="post" action="{% url 'delete_lecturer' lect.user.id %}">
+                            {% csrf_token %}
+                            <button class="btn btn-light"
+                                onclick="return confirm('Delete lecturer?');">
+                                Delete
+                            </button>
+                        </form>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="3">No lecturers yet.</td></tr>
+                {% endfor %}
+
                 </tbody>
             </table>
         </div>

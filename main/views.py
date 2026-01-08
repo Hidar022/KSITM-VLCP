@@ -19,7 +19,8 @@ from django.views.decorators.csrf import csrf_protect
 
 
 from functools import wraps
-from .models import Profile 
+from .models import Profile
+from .models import AuditLog 
 # ===================== AUTHENTICATION ===================== #
 
 
@@ -170,27 +171,44 @@ def dashboard_view(request):
 
 # Approve student
 @login_required
+@admin_required
 def approve_student(request, user_id):
     student = get_object_or_404(Profile, pk=user_id, role='student')
     student.is_approved = True
     student.save()
+
+    # Log the action
+    AuditLog.objects.create(
+        user=request.user,
+        action='approve_student',
+        target=student.user.username,
+        details=f"Approved student in department {student.department}"
+    )
+
     messages.success(request, f"{student.user.username} has been approved!")
     return redirect('dashboard_admin')
 
 
 
 @login_required
+@admin_required
+@require_POST
 def delete_lecturer_view(request, user_id):
-    """
-    Deletes a user that is a lecturer (checks is_staff or group, adjust as needed).
-    """
     if request.method == 'POST':
         user = get_object_or_404(User, id=user_id)
         
-        # Optional: only delete if user is lecturer
-        if user.is_staff:  # or check user.groups if you use groups
+        if user.is_staff:  # assuming lecturers are staff
             username = user.username
             user.delete()
+
+            # Log deletion
+            AuditLog.objects.create(
+                user=request.user,
+                action='delete_lecturer',
+                target=username,
+                details="Deleted lecturer account"
+            )
+
             messages.success(request, f"Lecturer '{username}' deleted successfully.")
         else:
             messages.error(request, "This user is not a lecturer.")
@@ -199,15 +217,26 @@ def delete_lecturer_view(request, user_id):
     
     return redirect('dashboard_admin')
 
+
 @login_required
+@admin_required
+@require_POST
 def delete_student(request, user_id):
     if request.method == 'POST':
         user = get_object_or_404(User, id=user_id)
-        
-        # Optional: make sure it's actually a student
-        if not user.is_staff:  # assuming lecturers are staff
+
+        if not user.is_staff:  # assuming students are not staff
             username = user.username
             user.delete()
+
+            # Log deletion
+            AuditLog.objects.create(
+                user=request.user,
+                action='delete_student',
+                target=username,
+                details="Deleted student account"
+            )
+
             messages.success(request, f"Student '{username}' deleted successfully.")
         else:
             messages.error(request, "This user is not a student.")
@@ -216,45 +245,106 @@ def delete_student(request, user_id):
 
     return redirect('dashboard_admin')
 
+
+from django.db.models import Count
+
 @login_required
-def reports_admin(request):
+@admin_required
+def admin_reports_view(request):
+    # Existing totals
+    total_students = Profile.objects.filter(role='student').count()
+    approved_students = Profile.objects.filter(role='student', is_approved=True).count()
+    pending_students = Profile.objects.filter(role='student', is_approved=False).count()
+    total_lecturers = Profile.objects.filter(role='lecturer').count()
+    total_courses = Course.objects.count()
+    total_assignments = Assignment.objects.count()
+
+    # --- New: Students per department ---
     students_by_dept = Profile.objects.filter(role='student') \
-        .values('department') \
-        .annotate(count=Count('id')) \
-        .order_by('-count')
+                        .values('department') \
+                        .annotate(count=Count('id')) \
+                        .order_by('-count')  # highest first
 
-    labels = [row['department'] for row in students_by_dept]
-    data = [row['count'] for row in students_by_dept]
+    dept_labels = [row['department'] for row in students_by_dept]
+    dept_counts = [row['count'] for row in students_by_dept]
 
-    return render(request, "main/reports_admin.html", {
-        "labels_json": json.dumps(labels),
-        "data_json": json.dumps(data),
+    context = {
+        "total_students": total_students,
+        "approved_students": approved_students,
+        "pending_students": pending_students,
+        "total_lecturers": total_lecturers,
+        "total_courses": total_courses,
+        "total_assignments": total_assignments,
+        "dept_labels": dept_labels,
+        "dept_counts": dept_counts,
+    }
+    # --- Courses per department ---
+    courses_by_dept = Course.objects.values('department') \
+                        .annotate(count=Count('id')) \
+                        .order_by('-count')  # highest first
+
+    course_labels = [row['department'] for row in courses_by_dept]
+    course_counts = [row['count'] for row in courses_by_dept]
+
+    # Add to context
+    context.update({
+        "course_labels": course_labels,
+        "course_counts": course_counts,
+    })
+    # --- Assignments per department ---
+    assignments_by_dept = Assignment.objects.values('course__department') \
+                            .annotate(count=Count('id')) \
+                            .order_by('-count')
+
+    assignment_labels = [row['course__department'] for row in assignments_by_dept]
+    assignment_counts = [row['count'] for row in assignments_by_dept]
+
+    # Add to context
+    context.update({
+        "assignment_labels": assignment_labels,
+        "assignment_counts": assignment_counts,
     })
 
 
-@login_required
-def export_report(request, report):
-    if report == 'students':
-        queryset = Profile.objects.filter(role='student')
-        filename = 'students_report.csv'
-        headers = ['username', 'email', 'department', 'is_approved']
-        rows = [(p.user.username, p.user.email, p.department, p.is_approved) for p in queryset]
+    return render(request, "main/reports_admin.html", context)
 
-    elif report == 'courses':
-        queryset = Course.objects.all()
-        filename = 'courses_report.csv'
-        headers = ['title', 'description', 'department', 'created_at']
-        rows = [(c.title, c.description, c.department, c.created_at) for c in queryset]
+@login_required
+@admin_required
+def export_report(request, report_type):
+    response = HttpResponse(content_type='text/csv')
+
+    if report_type == "students":
+        response['Content-Disposition'] = 'attachment; filename="students_report.csv"'
+        writer = csv.writer(response)
+        writer.writerow(['Username', 'Email', 'Department', 'Approved'])
+
+        students = Profile.objects.filter(role='student').select_related('user')
+        for s in students:
+            writer.writerow([
+                s.user.username,
+                s.user.email,
+                s.department,
+                "Yes" if s.is_approved else "No"
+            ])
+
+    elif report_type == "courses":
+        response['Content-Disposition'] = 'attachment; filename="courses_report.csv"'
+        writer = csv.writer(response)
+        writer.writerow(['Title', 'Department', 'Lecturer'])
+
+        courses = Course.objects.select_related('lecturer')
+        for c in courses:
+            writer.writerow([
+                c.title,
+                c.department,
+                c.lecturer.user.username if c.lecturer else "N/A"
+            ])
 
     else:
-        return redirect("dashboard_admin")
+        return redirect('dashboard_admin')
 
-    response = HttpResponse(content_type="text/csv")
-    response['Content-Disposition'] = f'attachment; filename="{filename}"'
-    writer = csv.writer(response)
-    writer.writerow(headers)
-    writer.writerows(rows)
     return response
+
 
 
 # ===================== LECTURER FUNCTIONS ===================== #
@@ -421,19 +511,23 @@ def lecturer_courses_view(request):
 @login_required
 @admin_required
 def dashboard_admin_view(request):
-    """Admin Dashboard"""
+    pending_students = Profile.objects.filter(
+        role__iexact="student",
+        is_approved=False
+    )
 
-    # Security check
-    if not hasattr(request.user, 'profile') or request.user.profile.role != 'admin':
-        return redirect('login')
+    lecturers = Profile.objects.filter(role__iexact="lecturer")
 
-    # Fetch students or lecturers to display in dashboard
-    students = Profile.objects.all()  # Or whichever model you approve/delete
     context = {
-        'students': students,
+        "pending_students": pending_students,
+        "lecturers": lecturers,
+        "total_students": Profile.objects.filter(role="student").count(),
+        "total_lecturers": lecturers.count(),
+        "total_courses": Course.objects.count(),
+        "total_assignments": Assignment.objects.count(),
     }
 
-    return render(request, 'main/admin_dashboard.html', context)
+    return render(request, "main/admin_dashboard.html", context)
 
 @login_required
 def dashboard_lecturer_view(request):
@@ -528,3 +622,27 @@ def add_student_view(request):
         form = StudentForm()
     return render(request, 'main/add_student.html', {'form': form})
 
+@login_required
+def audit_log_view(request):
+    # Only admin can access
+    if not hasattr(request.user, 'profile') or request.user.profile.role != 'admin':
+        messages.error(request, "Access denied.")
+        return redirect('dashboard')
+
+    logs = AuditLog.objects.all()  # latest logs first because of ordering in model
+    search_query = request.GET.get('q', '')
+
+    # Optional: search by user, target, or action
+    if search_query:
+        logs = AuditLog.objects.filter(
+        Q(user__username__icontains=search_query) |
+        Q(target__icontains=search_query) |
+        Q(action__icontains=search_query)
+    )
+
+
+    context = {
+        "logs": logs,
+        "search_query": search_query
+    }
+    return render(request, "main/audit_log.html", context)

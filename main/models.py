@@ -186,3 +186,26 @@ class Result(models.Model):
 
     def __str__(self):
         return f"{self.student.user.username} - {self.course.title} ({self.score})"
+
+class AuditLog(models.Model):
+    ACTION_CHOICES = [
+        ('approve_student', 'Approve Student'),
+        ('delete_student', 'Delete Student'),
+        ('add_lecturer', 'Add Lecturer'),
+        ('delete_lecturer', 'Delete Lecturer'),
+        # you can add more actions later
+    ]
+
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='audit_actions')
+    action = models.CharField(max_length=50, choices=ACTION_CHOICES)
+    target = models.CharField(max_length=150, help_text="Username or ID of the affected user")
+    details = models.TextField(blank=True, null=True)
+    timestamp = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-timestamp']
+        verbose_name = "Audit Log"
+        verbose_name_plural = "Audit Logs"
+
+    def __str__(self):
+        return f"{self.user.username} -> {self.action} -> {self.target} ({self.timestamp.strftime('%Y-%m-%d %H:%M:%S')})"

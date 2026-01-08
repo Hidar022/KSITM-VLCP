@@ -20,8 +20,8 @@ urlpatterns = [
     path('dashboard/admin/delete/<int:user_id>/', views.delete_student, name='delete_student'),
     path('dashboard/admin/add-lecturer/', views.add_lecturer_view, name='add_lecturer'),
     path('dashboard/admin/lecturers/', views.lecturers_list_view, name='lecturers_list'),
-    path('dashboard/admin/export-report/<str:report>/', views.export_report, name='export_report'),
-    path('dashboard/admin/reports/', views.reports_admin, name='reports_admin'),
+    path("dashboard/admin/delete-lecturer/<int:user_id>/", views.delete_lecturer_view, name="delete_lecturer"),
+
 
     # ===== Courses =====
     path('courses/', views.courses, name='courses'),
@@ -41,4 +41,11 @@ urlpatterns = [
     # ===== Chat & Profile =====
     path('chat/<int:user_id>/', views.chat_view, name='chat'),
     path('profile/', views.profile_view, name='profile'),
+    
+    #reports
+    path("dashboard/admin/reports/",views.admin_reports_view, name="admin_reports"),
+    path('dashboard/admin/export/<str:report_type>/',views.export_report,name='export_report'),
+
+    path('dashboard/admin/audit/', views.audit_log_view, name='audit_log'),
+
 ]

@@ -1,55 +1,220 @@
-{% extends 'main/base.html' %}
-{% block content %}
-<div class="container mt-4">
-  <div class="d-flex justify-content-between align-items-center mb-3">
-    <h1>Reports</h1>
-    <div>
-      <a class="btn btn-outline-secondary" href="{% url 'export_report' 'students' %}">Download students (CSV)</a>
-      <a class="btn btn-outline-secondary" href="{% url 'export_report' 'courses' %}">Download courses (CSV)</a>
-    </div>
-  </div>
+{% extends "main/base.html" %}
+{% block title %}Admin Reports{% endblock %}
 
-  <div class="card mb-4">
-    <div class="card-header">Students per Department</div>
-    <div class="card-body">
-      <canvas id="studentsDeptChart" width="400" height="200"></canvas>
+{% block content %}
+{% with hide_footer=True %}
+
+<div class="dashboard-wrapper">
+
+    <h2 class="page-title">System Reports</h2>
+
+    <!-- Export Buttons -->
+    <div class="mt-4 mb-4">
+        <a href="{% url 'export_report' 'students' %}" class="btn btn-primary">
+            ⬇ Export Students (CSV)
+        </a>
+        <a href="{% url 'export_report' 'courses' %}" class="btn btn-secondary ms-2">
+            ⬇ Export Courses (CSV)
+        </a>
     </div>
-  </div>
+
+    <!-- Summary Cards -->
+    <div class="card-grid">
+        <div class="card">
+            <h5>Total Students</h5>
+            <p class="display-6">{{ total_students }}</p>
+        </div>
+        <div class="card">
+            <h5>Approved Students</h5>
+            <p class="display-6">{{ approved_students }}</p>
+        </div>
+        <div class="card">
+            <h5>Pending Students</h5>
+            <p class="display-6">{{ pending_students }}</p>
+        </div>
+        <div class="card">
+            <h5>Total Lecturers</h5>
+            <p class="display-6">{{ total_lecturers }}</p>
+        </div>
+        <div class="card">
+            <h5>Total Courses</h5>
+            <p class="display-6">{{ total_courses }}</p>
+        </div>
+        <div class="card">
+            <h5>Total Assignments</h5>
+            <p class="display-6">{{ total_assignments }}</p>
+        </div>
+    </div>
+
+    <!-- Charts -->
+    <div class="mt-5">
+        <h4>Student Approval Status</h4>
+        <canvas id="studentStatusChart" height="120"></canvas>
+
+        <h4 class="mt-4">User Role Distribution</h4>
+        <canvas id="roleChart" height="120"></canvas>
+
+        <h4 class="mt-4">Students by Department</h4>
+        <canvas id="deptChart" height="120"></canvas>
+
+        <h4 class="mt-4">Courses by Department</h4>
+        <canvas id="courseChart" height="120"></canvas>
+
+        <h4 class="mt-4">Assignments by Department</h4>
+        <canvas id="assignmentChart" height="120"></canvas>
+    </div>
+
 </div>
 
-<!-- Chart.js CDN -->
+<!-- ===================== JS SECTION ===================== -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
-  // Ensure labels/data always become valid JS arrays even when context is missing
-  const labels = {{ labels_json|default:"[]"|safe }};
-  const data = {{ data_json|default:"[]"|safe }};
-
-  const ctx = document.getElementById('studentsDeptChart').getContext('2d');
-
-  if (Array.isArray(labels) && labels.length > 0 && Array.isArray(data) && data.length > 0) {
-    new Chart(ctx, {
-      type: 'bar',
-      data: {
-        labels: labels,
-        datasets: [{
-          label: 'Students',
-          data: data,
-          backgroundColor: 'rgba(54, 162, 235, 0.6)',
-          borderColor: 'rgba(54, 162, 235, 1)',
-          borderWidth: 1
-        }]
-      },
-      options: {
-        responsive: true,
-        scales: {
-          y: { beginAtZero: true, ticks: { precision:0 } }
+    // Student Approval Status Pie Chart with percentages
+    new Chart(document.getElementById("studentStatusChart").getContext("2d"), {
+        type: "pie",
+        data: {
+            labels: ["Approved", "Pending"],
+            datasets: [{
+                data: [{{ approved_students }}, {{ pending_students }}],
+                backgroundColor: ["#4caf50", "#f44336"],
+                borderColor: "#ffffff",
+                borderWidth: 2
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: { position: 'top' },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            let total = context.dataset.data.reduce((a,b) => a + b, 0);
+                            let value = context.raw;
+                            let percentage = ((value / total) * 100).toFixed(1);
+                            return `${context.label}: ${value} (${percentage}%)`;
+                        }
+                    }
+                }
+            }
         }
-      }
     });
-  } else {
-    // Friendly fallback when no data
-    const parent = document.getElementById('studentsDeptChart').parentElement;
-    parent.innerHTML = '<p class="text-muted">No student data available to display.</p>';
-  }
+
+    // Role Distribution Bar Chart with hover tooltip
+    new Chart(document.getElementById("roleChart").getContext("2d"), {
+        type: "bar",
+        data: {
+            labels: ["Students", "Lecturers"],
+            datasets: [{
+                label: "Users",
+                data: [{{ total_students }}, {{ total_lecturers }}],
+                backgroundColor: ["#2196f3", "#ff9800"],
+                borderColor: ["#1976d2", "#f57c00"],
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            scales: { y: { beginAtZero: true } },
+            plugins: {
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            let total = context.dataset.data.reduce((a,b) => a + b, 0);
+                            let value = context.raw;
+                            let percentage = ((value / total) * 100).toFixed(1);
+                            return `${context.label}: ${value} (${percentage}%)`;
+                        }
+                    }
+                },
+                legend: { display: false }
+            }
+        }
+    });
+
+    // Students by Department
+    new Chart(document.getElementById("deptChart").getContext("2d"), {
+        type: "bar",
+        data: {
+            labels: {{ dept_labels|safe }},
+            datasets: [{
+                label: "Students",
+                data: {{ dept_counts|safe }},
+                backgroundColor: 'rgba(54, 162, 235, 0.6)',
+                borderColor: 'rgba(54, 162, 235, 1)',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            scales: { y: { beginAtZero: true } },
+            plugins: {
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            return `${context.label}: ${context.raw}`;
+                        }
+                    }
+                }
+            }
+        }
+    });
+
+    // Courses by Department
+    new Chart(document.getElementById("courseChart").getContext("2d"), {
+        type: "bar",
+        data: {
+            labels: {{ course_labels|safe }},
+            datasets: [{
+                label: "Courses",
+                data: {{ course_counts|safe }},
+                backgroundColor: 'rgba(255, 99, 132, 0.6)',
+                borderColor: 'rgba(255, 99, 132, 1)',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            scales: { y: { beginAtZero: true } },
+            plugins: {
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            return `${context.label}: ${context.raw}`;
+                        }
+                    }
+                }
+            }
+        }
+    });
+
+    // Assignments by Department
+    new Chart(document.getElementById("assignmentChart").getContext("2d"), {
+        type: "bar",
+        data: {
+            labels: {{ assignment_labels|safe }},
+            datasets: [{
+                label: "Assignments",
+                data: {{ assignment_counts|safe }},
+                backgroundColor: 'rgba(255, 206, 86, 0.6)',
+                borderColor: 'rgba(255, 206, 86, 1)',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            scales: { y: { beginAtZero: true } },
+            plugins: {
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            return `${context.label}: ${context.raw}`;
+                        }
+                    }
+                }
+            }
+        }
+    });
 </script>
+
+{% endwith %}
 {% endblock %}
