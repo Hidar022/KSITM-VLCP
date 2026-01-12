@@ -170,6 +170,11 @@ footer a:hover {
     color: #0f172a;
 }
 
+.card.hover-card:hover h5,
+.card.hover-card:hover p {
+    color: #0f172a !important;
+}
+
 /* ------------------------- */
 /* Responsive Adjustments */
 /* ------------------------- */
