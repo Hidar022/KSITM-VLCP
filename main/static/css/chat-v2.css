@@ -221,7 +221,10 @@ header {
     position: fixed;
     inset: 0;
     z-index: 50;
+    background: transparent; /* keep chat visible */
 }
+
+/* LOCAL VIDEO */
 .local-video {
     width: 120px;
     height: 160px;
@@ -230,15 +233,44 @@ header {
     right: 10px;
     border: 2px solid var(--ks-accent);
     border-radius: 12px;
+    z-index: 60;
 }
+
+/* REMOTE VIDEO */
 .remote-video {
     width: 100%;
     height: 100%;
     object-fit: cover;
+    z-index: 55;
+}
+
+/* CALL TIMER */
+#callTimer {
+    font-size: 14px;
+    color: white;
+    font-weight: bold;
+    margin-top: 4px;
+    position: absolute;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 100;
+    background: rgba(0,0,0,0.4);
+    padding: 4px 8px;
+    border-radius: 8px;
 }
 
 /* ---------- RESPONSIVE ---------- */
 @media (max-width: 640px) {
     .floating-shape { display: none; }
     .message-card { max-width: 86%; }
+
+    #callBox {
+        width: 100vw;
+        height: 100vh;
+    }
+    .local-video {
+        width: 100px;
+        height: 140px;
+    }
 }

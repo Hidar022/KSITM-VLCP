@@ -1,15 +1,39 @@
 /* =========================
-   Auth Pages Shared Styles
+   Auth Pages - Unified Styles
 =========================== */
 
 body {
-    background: #f5f5f5; /* light gray */
+    background: #f5f5f5;
     font-family: 'Poppins', sans-serif;
     color: #0f172a;
     margin: 0;
     padding: 0;
     overflow-x: hidden;
     position: relative;
+}
+
+/* Left info panel hover animations */
+.auth-info h2 {
+    font-size: 2rem;
+    font-weight: 700;
+    margin-bottom: 20px;
+    transition: transform 0.3s ease, text-shadow 0.3s ease;
+}
+
+.auth-info h2:hover {
+    transform: translateY(-5px);
+    text-shadow: 0 4px 12px rgba(255, 255, 255, 0.6);
+}
+
+.auth-info p {
+    font-size: 1rem;
+    line-height: 1.6;
+    margin-bottom: 15px;
+    transition: text-shadow 0.3s ease;
+}
+
+.auth-info p:hover {
+    text-shadow: 0 2px 6px rgba(255, 255, 255, 0.5);
 }
 
 /* Floating shapes */
@@ -38,32 +62,52 @@ body {
     animation: floatShape2 8s ease-in-out infinite alternate;
 }
 
-/* Auth container */
-.auth-container {
+/* Unified container */
+.auth-wrapper {
     min-height: 100vh;
-    padding-top: 100px;
     display: flex;
     align-items: center;
     justify-content: center;
+    padding: 50px 20px;
 }
 
-/* Auth box */
-.auth-box {
+/* Flex container */
+.auth-container {
+    display: flex;
     background: #fff;
     border-radius: 14px;
-    padding: 40px;
+    overflow: hidden;
+    max-width: 900px;
     width: 100%;
-    max-width: 400px;
     box-shadow: 0 12px 25px rgba(0,0,0,0.12);
-    text-align: center;
-    position: relative;
-    transition: 0.3s ease;
-    z-index: 5;
 }
 
-.auth-box:hover {
-    transform: translateY(-4px);
+/* Left info panel */
+.auth-info {
+    flex: 1.1;
+    background: linear-gradient(135deg, #F58634, #ff9126);
+    color: #fff;
+    padding: 50px 40px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    font-size: 1rem;
+    line-height: 1.6;
+    animation: fadeInLeft 1s ease forwards;
 }
+
+/* Right login panel */
+.auth-box {
+    flex: 0.9;
+    padding: 40px 30px;
+    text-align: center;
+    position: relative;
+    z-index: 5;
+    background: #fff;
+    animation: zoomIn 0.8s ease forwards;
+}
+
+.auth-box:hover { transform: translateY(-4px); }
 
 /* Logo circle */
 .logo-circle {
@@ -85,14 +129,7 @@ body {
 }
 
 /* Form inputs */
-label {
-    color: #0f172a;
-    font-weight: 500;
-    margin-top: 12px;
-    display: block;
-    text-align: left;
-}
-
+label { color: #0f172a; font-weight: 500; margin-top: 12px; display: block; text-align: left; }
 .form-control {
     background: #f0f0f0;
     border: 1px solid #ccc;
@@ -102,10 +139,7 @@ label {
     width: 100%;
     margin-bottom: 12px;
 }
-
-.form-control:focus {
-    outline: 2px solid #F58634;
-}
+.form-control:focus { outline: 2px solid #F58634; }
 
 /* Submit Button */
 .submit-btn {
@@ -120,20 +154,14 @@ label {
     cursor: pointer;
     transition: 0.3s ease;
 }
-
 .submit-btn:hover {
     background: linear-gradient(90deg, #F58634, #ff9126);
     box-shadow: 0 0 12px rgba(245,134,52,0.6);
+    color: #fff;
 }
 
 /* Role Tabs Styling */
-.role-tab-container {
-    display: flex !important;
-    justify-content: center;
-    gap: 12px;
-    margin-bottom: 20px;
-}
-
+.role-tab-container { display: flex !important; justify-content: center; gap: 12px; margin-bottom: 20px; }
 .role-tab {
     padding: 10px 22px;
     border-radius: 8px;
@@ -143,16 +171,8 @@ label {
     font-weight: 600;
     transition: all 0.3s ease;
 }
-
-.role-tab:hover {
-    background: #F58634;
-    color: #fff;
-}
-
-.active-role {
-    background: #F58634;
-    color: white;
-}
+.role-tab:hover { background: #F58634; color: #fff; }
+.active-role { background: #F58634; color: white; }
 
 /* Lecturer ID box hidden by default */
 #lecturer-id-box { display: none; }
@@ -161,23 +181,31 @@ label {
 .text-link a { color: #F58634; text-decoration: none; }
 .text-link a:hover { text-decoration: underline; }
 
-/* Floating shapes animations */
-@keyframes floatShape1 {
-    0% { transform: translateY(0) translateX(0); }
-    50% { transform: translateY(-20px) translateX(10px); }
-    100% { transform: translateY(0) translateX(0); }
-}
-
-@keyframes floatShape2 {
-    0% { transform: translateY(0) translateX(0); }
-    50% { transform: translateY(-15px) translateX(-10px); }
-    100% { transform: translateY(0) translateX(0); }
-}
+/* Animations */
+@keyframes fadeInLeft { 0% {opacity:0; transform:translateX(-50px);} 100% {opacity:1; transform:translateX(0);} }
+@keyframes zoomIn { 0% {opacity:0; transform:scale(0.8);} 100% {opacity:1; transform:scale(1);} }
+@keyframes floatShape1 {0% { transform: translateY(0) translateX(0);} 50% { transform: translateY(-20px) translateX(10px);} 100% { transform: translateY(0) translateX(0); }}
+@keyframes floatShape2 {0% { transform: translateY(0) translateX(0);} 50% { transform: translateY(-15px) translateX(-10px);} 100% { transform: translateY(0) translateX(0); }}
 
 /* Responsive */
-@media (max-width: 500px) {
-    .auth-box { padding: 30px; }
-    .logo-circle { width: 90px; height: 90px; }
-    .role-tab-container { flex-direction: column; }
-    .role-tab { margin-bottom: 10px; }
+@media (max-width: 768px) {
+    .auth-container { flex-direction: column; }
+    .auth-info { padding: 30px 20px; }
+    .auth-box { padding: 30px 20px; }
+}
+
+.auth-container {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.auth-box {
+    max-width: 420px;
+    padding: 30px;
+    background: #fff;
+    border-radius: 14px;
+    text-align: center;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.1);
 }
