@@ -4,6 +4,8 @@ from urllib.parse import urlparse
 import dj_database_url
 
 # force railway rebuild
+# Force Railway deploy for static changes
+
 
 # ------------------------------
 # BASE DIR
