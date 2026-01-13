@@ -11,36 +11,50 @@ document.addEventListener("DOMContentLoaded", () => {
     callTone.loop = true;
 
     let audioUnlocked = false;
+    let _audioUnlockResolve = null;
+    const audioUnlockPromise = new Promise((res) => { _audioUnlockResolve = res; });
 
     function unlockAudio() {
         if (audioUnlocked) return;
 
+        // mark as unlocked optimistically on user gesture
+        audioUnlocked = true;
+
+        // try to play once to satisfy browser autoplay policies, then pause
         callTone.play().then(() => {
             callTone.pause();
             callTone.currentTime = 0;
-            audioUnlocked = true;
-            console.log("🔓 Audio unlocked");
-        }).catch(() => {});
+            console.log("🔓 Audio unlocked (play succeeded)");
+            if (_audioUnlockResolve) _audioUnlockResolve();
+        }).catch((err) => {
+            // still resolve so waiting callers can attempt to play
+            console.warn("🔇 unlock play blocked", err);
+            if (_audioUnlockResolve) _audioUnlockResolve();
+        });
     }
 
     document.addEventListener("click", unlockAudio, { once: true });
         function playCallTone() {
-            if (!audioUnlocked) {
-                console.warn("🔇 Audio not unlocked yet, waiting for click");
-                return;
-            }
+                if (!audioUnlocked) {
+                    console.warn("🔇 Audio not unlocked yet, will wait for user gesture");
+                    // wait for the unlock gesture (e.g., page click or enable button)
+                    audioUnlockPromise.then(() => playCallTone());
+                    return;
+                }
 
-            // Stop if already playing
-            callTone.pause();
-            callTone.currentTime = 0;
+                // Stop if already playing and reset
+                try {
+                    callTone.pause();
+                    callTone.currentTime = 0;
+                } catch (e) { /* ignore */ }
 
-            // Try to play, catch errors
-            const playPromise = callTone.play();
-            if (playPromise !== undefined) {
-                playPromise
-                    .then(() => console.log("🔔 Ringtone playing"))
-                    .catch(err => console.warn("❌ Ring blocked", err));
-            }
+                // Try to play, catch errors
+                const playPromise = callTone.play();
+                if (playPromise !== undefined) {
+                    playPromise
+                        .then(() => console.log("🔔 Ringtone playing"))
+                        .catch(err => console.warn("❌ Ring blocked", err));
+                }
         }
 
 
@@ -121,6 +135,51 @@ document.addEventListener("DOMContentLoaded", () => {
         el.textContent = `${mins}:${secs}`;
     }
 
+ /* -------------------- Call UI Helpers -------------------- */
+function showCallBox(type = "audio") {
+    callBox.classList.add("active");
+    callBox.style.pointerEvents = "auto";
+
+    if (type === "video") {
+        callBox.classList.add("video-mode");
+        localVideo.classList.remove("hidden");
+        remoteVideo.classList.remove("hidden");
+        document.getElementById("audioCallUI").classList.add("hidden");
+    } else {
+        callBox.classList.remove("video-mode");
+        localVideo.classList.add("hidden");
+        remoteVideo.classList.add("hidden");
+        document.getElementById("audioCallUI").classList.remove("hidden");
+    }
+    // make sure buttons reflect the active call state for both sides
+    showCallBoxButtons(type);
+}
+
+// Ensure the correct buttons are visible when call box shows (both caller & callee)
+function showCallBoxButtons(type = "audio") {
+    // hide start buttons
+    if (callBtn) callBtn.classList.add("hidden");
+    if (startVideoCallBtn) startVideoCallBtn.classList.add("hidden");
+
+    // show correct end button
+    if (type === "video") {
+        if (endVideoCallBtn) endVideoCallBtn.classList.remove("hidden");
+        if (endCallBtn) endCallBtn.classList.add("hidden");
+    } else {
+        if (endCallBtn) endCallBtn.classList.remove("hidden");
+        if (endVideoCallBtn) endVideoCallBtn.classList.add("hidden");
+    }
+}
+
+function hideCallBox() {
+    callBox.classList.remove("active", "video-mode");
+    callBox.style.pointerEvents = "none";
+
+    localVideo.classList.add("hidden");
+    remoteVideo.classList.add("hidden");
+    document.getElementById("audioCallUI").classList.add("hidden");
+}
+
     /* -------------------- UI Elements -------------------- */
     const messagesBox = document.getElementById("messages");
     const sendBtn = document.getElementById("sendBtn");
@@ -142,7 +201,8 @@ document.addEventListener("DOMContentLoaded", () => {
     const remoteVideo = document.getElementById("remoteVideo");
     const endVideoCallBtn = document.getElementById("endVideoCallBtn");
     const callBox = document.getElementById("callBox");
-     const audioInput = document.getElementById("audioInput");
+    const audioInput = document.getElementById("audioInput");
+    const toggleMicBtn = document.getElementById("toggleMicBtn");
 
 
     /* -------------------- State -------------------- */
@@ -167,6 +227,8 @@ document.addEventListener("DOMContentLoaded", () => {
     let currentCallType = null; // "audio" or "video"
     let recordTimer = null;
     let recordSeconds = 0;
+    let micEnabled = true;
+
 
 
 
@@ -231,7 +293,27 @@ if (data.type === "call_offer") {
     currentCallType = data.call_type || "audio";
 
     incomingCallBox.classList.remove("hidden");
-    playCallTone();
+    setTimeout(() => playCallTone(), 200);
+
+    // If audio isn't unlocked yet (first visit), show an enable-sound button
+    if (!audioUnlocked) {
+        // avoid duplicating the button
+        if (!document.getElementById('enableSoundBtn')) {
+            const btn = document.createElement('button');
+            btn.id = 'enableSoundBtn';
+            btn.textContent = 'Enable sound';
+            btn.className = 'px-4 py-2 bg-ks-accent text-white rounded';
+            btn.onclick = (ev) => {
+                ev.stopPropagation();
+                unlockAudio();
+                playCallTone();
+                btn.remove();
+            };
+
+            // append to the incoming call box content area
+            incomingCallBox.querySelector('div').appendChild(btn);
+        }
+    }
 
     // ⏱ 30s ring timeout (receiver side)
     ringTimeout = setTimeout(() => {
@@ -254,19 +336,28 @@ if (data.type === "call_offer") {
         currentCallType = null;
     }, RING_DURATION);
 }
-
         /* ---------- Call Answer ---------- */
         if (
             data.type === "call_answer" &&
             peerConnection &&
             peerConnection.signalingState === "have-local-offer"
         ) {
-            clearTimeout(ringTimeout);
+            // Stop ringing (caller side)
+            if (ringTimeout) {
+                clearTimeout(ringTimeout);
+                ringTimeout = null;
+            }
+            stopCallTone();
 
+            // Apply remote SDP answer
             await peerConnection.setRemoteDescription(
                 new RTCSessionDescription(data.answer)
             );
 
+            // ✅ Start call timer ONLY when call is connected
+            startCallTimer();
+
+            // Add queued ICE candidates
             for (const c of pendingIceCandidates) {
                 await peerConnection.addIceCandidate(c);
             }
@@ -313,17 +404,18 @@ if (data.type === "call_offer") {
 
 connect();
 
+//----------create message bubble dom---------------//
+function createBubbleDOM(payload, isMine, status = "sending...") {
+    const wrapper = document.createElement("div");
+    wrapper.className = `w-full flex ${isMine ? "justify-end" : "justify-start"}`;
 
-    /* -------------------- Helpers -------------------- */
-    function formatTS(iso) {
-        const d = new Date(iso);
-        return `${d.getHours()}:${String(d.getMinutes()).padStart(2, "0")}`;
-    }
-    function createBubbleDOM(payload, isMine, status = "sending...") {
-        const wrapper = document.createElement("div");
-        wrapper.className = `w-full flex ${isMine ? "justify-end" : "justify-start"}`;
+    const bubble = document.createElement("article");
 
-        const bubble = document.createElement("article");
+    // System messages get their own style
+    if (payload.is_system) {
+        bubble.className = "max-w-[75%] p-3 rounded-xl relative bg-gray-300 text-gray-800 text-center italic";
+        bubble.textContent = payload.message || "";
+    } else {
         bubble.className =
             "max-w-[75%] p-3 rounded-xl relative message-bubble " +
             (isMine ? "bg-orange-500 text-white" : "bg-slate-700 text-white");
@@ -346,42 +438,41 @@ connect();
                     : ""
             }
         `;
-
-        wrapper.appendChild(bubble);
-        return { wrapper, bubble };
     }
 
+    wrapper.appendChild(bubble);
+    return { wrapper, bubble };
+}
 
+// -------------------- Incoming messages --------------------
+function handleIncomingMessage(data) {
+    const isMine = data.sender_id == CURRENT_USER_ID;
 
+    // Check if this is a normal user message
+    const isSystem = data.is_system || false; // we will mark system messages
 
-    function handleIncomingMessage(data) {
-        const isMine = data.sender_id == CURRENT_USER_ID;
-
-        if (data.client_id && pendingClientMap[data.client_id]) {
+    // If we already have a pending bubble, update its status
+    if (!isSystem && data.client_id && pendingClientMap[data.client_id]) {
         const bubble = pendingClientMap[data.client_id];
-
         const statusEl = bubble.querySelector('[data-status]');
         if (statusEl) statusEl.textContent = "sent ✔";
-
         delete pendingClientMap[data.client_id];
         return;
+    }
 
+    // Create bubble
+    const { wrapper } = createBubbleDOM(data, isMine, isMine && !isSystem ? "delivered ✔" : null, isSystem);
+    messagesBox.appendChild(wrapper);
+    messagesBox.scrollTop = messagesBox.scrollHeight;
 
-        }
-
-
-        const { wrapper } = createBubbleDOM(data, isMine);
-        messagesBox.appendChild(wrapper);
-        messagesBox.scrollTop = messagesBox.scrollHeight;
-
-        // notify sender that message was delivered
+    // Notify sender only for real user messages
+    if (!isSystem) {
         socket.send(JSON.stringify({
             type: "delivered",
             client_id: data.client_id
         }));
-
     }
-
+}
 
 
     /* -------------------- Send Text -------------------- */
@@ -498,110 +589,91 @@ recordBtn.addEventListener("click", async () => {
 });
 
 
-    /* -------------------- Accept Call -------------------- */
-  acceptCallBtn.onclick = async () => {
-    // Stop ringing
-    if (ringTimeout) {
-        clearTimeout(ringTimeout);
-        ringTimeout = null;
-    }
-    stopCallTone();
-
-    // Start the call timer (shows it too)
-    startCallTimer();
-
+ /* -------------------- Accept Incoming Call -------------------- */
+acceptCallBtn.onclick = async () => {
+    // ensure user gesture unlocks audio so answer flow can play/stop tones
+    unlockAudio();
     if (!incomingOffer || isCaller) return;
 
-    // Hide incoming call UI
+    // Stop ringing
+    clearTimeout(ringTimeout);
+    ringTimeout = null;
+    stopCallTone();
+
+    startCallTimer();
+    showCallBox(currentCallType);
+
     incomingCallBox.classList.add("hidden");
 
-    const constraints =
-        currentCallType === "video"
-            ? { audio: true, video: true }
-            : { audio: true };
+    const constraints = currentCallType === "video" 
+        ? { audio: true, video: true } 
+        : { audio: true };
 
     localStream = await navigator.mediaDevices.getUserMedia(constraints);
-
     peerConnection = new RTCPeerConnection(rtcConfig);
     localStream.getTracks().forEach(track => peerConnection.addTrack(track, localStream));
 
-    // ✅ Show callBox for **both audio and video**
-    callBox.classList.remove("hidden");
-
+    // Remote tracks
     if (currentCallType === "video") {
-        endVideoCallBtn.classList.remove("hidden");
-        startVideoCallBtn.classList.add("hidden");
-        localVideo.srcObject = localStream;
-        localVideo.classList.remove("hidden");
-
-        peerConnection.ontrack = e => {
-            remoteVideo.srcObject = e.streams[0];
-            remoteVideo.classList.remove("hidden");
-        };
+        peerConnection.ontrack = e => remoteVideo.srcObject = e.streams[0];
     } else {
-        // AUDIO ONLY
-        peerConnection.ontrack = e => {
-            remoteAudio.srcObject = e.streams[0];
-        };
+        peerConnection.ontrack = e => remoteAudio.srcObject = e.streams[0];
     }
 
-    // ICE candidates
     peerConnection.onicecandidate = e => {
         if (e.candidate) {
-            socket.send(JSON.stringify({
-                type: "ice_candidate",
-                candidate: e.candidate
-            }));
+            socket.send(JSON.stringify({ type: "ice_candidate", candidate: e.candidate }));
         }
     };
 
-    // Set remote description
-    await peerConnection.setRemoteDescription(incomingOffer);
+    await peerConnection.setRemoteDescription(new RTCSessionDescription(incomingOffer));
 
-    // Add any pending ICE candidates
+    // Add queued ICE candidates
     for (const c of pendingIceCandidates) {
         await peerConnection.addIceCandidate(c);
     }
     pendingIceCandidates = [];
 
-    // Create and send answer
+    // Send answer
     const answer = await peerConnection.createAnswer();
     await peerConnection.setLocalDescription(answer);
-    socket.send(JSON.stringify({
-        type: "call_answer",
-        answer
-    }));
+    socket.send(JSON.stringify({ type: "call_answer", answer }));
 
-    // Show end call button
-    endCallBtn.classList.remove("hidden");
-
-    // Hide audio/video start buttons if needed
+    // ✅ Show the correct end button based on call type
     if (currentCallType === "video") {
-        callBtn.classList.add("hidden");
+        endVideoCallBtn.classList.remove("hidden");
+        endCallBtn.classList.add("hidden");
+    } else {
+        endCallBtn.classList.remove("hidden");
+        endVideoCallBtn.classList.add("hidden");
     }
 };
 
-
-
-
     /* -------------------- Reject Call -------------------- */
     rejectCallBtn.onclick = () => {
+        // unlock audio on reject click (user gesture) so future rings can play
+        unlockAudio();
         if (ringTimeout) {
             clearTimeout(ringTimeout);
             ringTimeout = null;
         }
         stopCallTone();
 
-
-                if (!incomingOffer) return;
+        if (!incomingOffer) return;
         incomingCallBox.classList.add("hidden");
         socket.send(JSON.stringify({ type: "call_end" }));
         incomingOffer = null;
     };
 
     /* -------------------- End Call -------------------- */
-        /* ---------- End Call Cleanup ---------- */
+    endCallBtn.onclick = () => endCallCleanup(true);
+    endVideoCallBtn.onclick = () => endCallCleanup(true);
+
     function endCallCleanup(sendSignal = true) {
+        // hide incoming call UI as well (covers remote hangup during ringing)
+        if (incomingCallBox) incomingCallBox.classList.add("hidden");
+
+        hideCallBox(); 
         peerConnection?.close();
         localStream?.getTracks().forEach(t => t.stop());
 
@@ -625,11 +697,12 @@ recordBtn.addEventListener("click", async () => {
             remoteVideo.classList.add("hidden");
         }
 
-        callBox.classList.add("hidden"); 
         callBtn.classList.remove("hidden");
         startVideoCallBtn.classList.remove("hidden");
         endCallBtn.classList.add("hidden");
         endVideoCallBtn.classList.add("hidden");
+        callBox.classList.remove("video-mode");
+
 
         // Stop the ringtone whenever the call ends
         stopCallTone();
@@ -639,127 +712,160 @@ recordBtn.addEventListener("click", async () => {
         }
     }
 
-    /* ---------- Missed call (receiver did not answer) ---------- */
-    ringTimeout = setTimeout(() => {
-        console.log("📵 Missed call");
 
-        // Stop ringtone
-        stopCallTone();
+  // ----------- start AUDIO call ----------- //
+callBtn.onclick = async () => {
+    unlockAudio();
+    isCaller = true;
+    currentCallType = "audio";
 
-        // Hide incoming call box
-        incomingCallBox.classList.add("hidden");
+    endCallBtn.classList.remove("hidden");
+    callBtn.classList.add("hidden");
+    startVideoCallBtn.classList.add("hidden");
 
-        // Notify caller
-        socket.send(JSON.stringify({
-            type: "call_missed",
-            call_type: currentCallType
-        }));
+    showCallBox("audio"); // <<< use this
 
-        // Reset receiver state
-        incomingOffer = null;
-        currentCallType = null;
-
-        // On caller side, cleanup UI (End button disappears)
-        endCallCleanup(false);
-
-    }, RING_DURATION);
-
-
-        // ----------- start AUDIO call ----------- //
-    callBtn.onclick = async () => {
-        isCaller = true;
-        currentCallType = "audio";
-
-        endCallBtn.classList.remove("hidden");
-        callBtn.classList.add("hidden");
-        startVideoCallBtn.classList.add("hidden");
-
-        // 🎤 AUDIO ONLY
-        localStream = await navigator.mediaDevices.getUserMedia({
-            audio: true
-        });
-
-        peerConnection = new RTCPeerConnection(rtcConfig);
-
-        localStream.getTracks().forEach(track =>
-            peerConnection.addTrack(track, localStream)
-        );
-
-        peerConnection.ontrack = e => {
-            remoteAudio.srcObject = e.streams[0];
-        };
-
-        peerConnection.onicecandidate = e => {
-            if (e.candidate) {
-                socket.send(JSON.stringify({
-                    type: "ice_candidate",
-                    candidate: e.candidate
-                }));
-            }
-        };
-
-        const offer = await peerConnection.createOffer();
-        await peerConnection.setLocalDescription(offer);
-
-        socket.send(JSON.stringify({
-            type: "call_offer",
-            offer,
-            caller_id: CURRENT_USER_ID,
-            call_type: "audio"
-        }));
+    localStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    peerConnection = new RTCPeerConnection(rtcConfig);
+    localStream.getTracks().forEach(track =>
+        peerConnection.addTrack(track, localStream)
+    );
+    peerConnection.ontrack = e => {
+        remoteAudio.srcObject = e.streams[0];
+    };
+    peerConnection.onicecandidate = e => {
+        if (e.candidate) {
+            socket.send(JSON.stringify({
+                type: "ice_candidate",
+                candidate: e.candidate
+            }));
+        }
     };
 
+    const offer = await peerConnection.createOffer();
+    await peerConnection.setLocalDescription(offer);
 
-           //-----------start video call----------//
-        startVideoCallBtn.onclick = async () => {
-            isCaller = true;            // ✅ ADD
-            currentCallType = "video";  // ✅ ADD
+    socket.send(JSON.stringify({
+        type: "call_offer",
+        offer,
+        caller_id: CURRENT_USER_ID,
+        call_type: "audio"
+    }));
 
-            endVideoCallBtn.classList.remove("hidden");
-            callBtn.classList.add("hidden");
-            startVideoCallBtn.classList.add("hidden");
+    // ⏱ Caller side ring timeout
+    ringTimeout = setTimeout(() => {
+        console.log("📵 Call not answered (caller timeout)");
 
+        stopCallTone();
+        endCallCleanup(false);
 
-            localStream = await navigator.mediaDevices.getUserMedia({
-                audio: true,
-                video: true
-            });
+        // ✅ Add system message bubble for missed call
+        const { wrapper } = createBubbleDOM(
+            { message: "📵 Audio call not answered", is_system: true },
+            true
+        );
+        messagesBox.appendChild(wrapper);
+        messagesBox.scrollTop = messagesBox.scrollHeight;
 
-            localVideo.srcObject = localStream;
-            localVideo.classList.remove("hidden");
-
-            peerConnection = new RTCPeerConnection(rtcConfig);
-
-            localStream.getTracks().forEach(track =>
-                peerConnection.addTrack(track, localStream)
-            );
-
-            peerConnection.ontrack = e => {
-                remoteVideo.srcObject = e.streams[0];
-                remoteVideo.classList.remove("hidden");
-                
-            };
-
-            peerConnection.onicecandidate = e => {
-                if (e.candidate) {
-                    socket.send(JSON.stringify({
-                        type: "ice_candidate",
-                        candidate: e.candidate
-                    }));
-                }
-            };
-
-            const offer = await peerConnection.createOffer();
-            await peerConnection.setLocalDescription(offer);
-
-            socket.send(JSON.stringify({
-            type: "call_offer",
-            offer,
-            caller_id: CURRENT_USER_ID,
-            call_type: "video"
+        // Optionally, notify the receiver (if needed)
+        socket.send(JSON.stringify({
+            type: "call_missed",
+            call_type: "audio"
         }));
 
+    }, RING_DURATION);
+};
+
+
+
+/* -------------------- Start Audio Call -------------------- */
+callBtn.onclick = async () => startCall("audio");
+
+/* -------------------- Start Video Call -------------------- */
+startVideoCallBtn.onclick = async () => startCall("video");
+
+/* -------------------- Unified Start Call -------------------- */
+async function startCall(type) {
+    unlockAudio();
+    isCaller = true;
+    currentCallType = type;
+
+    showCallBox(type);
+
+    if (type === "audio") {
+        endCallBtn.classList.remove("hidden");
+        callBtn.classList.add("hidden");
+    } else {
+        endVideoCallBtn.classList.remove("hidden");
+        callBtn.classList.add("hidden");
+        startVideoCallBtn.classList.add("hidden");
+    }
+
+    const constraints = type === "video" 
+        ? { audio: true, video: true } 
+        : { audio: true };
+
+    localStream = await navigator.mediaDevices.getUserMedia(constraints);
+
+    if (type === "video") {
+        localVideo.srcObject = localStream;
+        localVideo.muted = true;
+    }
+
+    peerConnection = new RTCPeerConnection(rtcConfig);
+    localStream.getTracks().forEach(track => peerConnection.addTrack(track, localStream));
+
+    peerConnection.ontrack = e => {
+        if (type === "video") remoteVideo.srcObject = e.streams[0];
+        else remoteAudio.srcObject = e.streams[0];
+    };
+
+    peerConnection.onicecandidate = e => {
+        if (e.candidate) {
+            socket.send(JSON.stringify({ type: "ice_candidate", candidate: e.candidate }));
+        }
+    };
+
+    const offer = await peerConnection.createOffer();
+    await peerConnection.setLocalDescription(offer);
+
+    socket.send(JSON.stringify({
+        type: "call_offer",
+        offer,
+        caller_id: CURRENT_USER_ID,
+        call_type: type
+    }));
+
+    // Caller ring timeout
+    ringTimeout = setTimeout(() => {
+        console.log("📵 Call not answered (caller timeout)");
+        stopCallTone();
+        endCallCleanup(false);
+
+        const { wrapper } = createBubbleDOM({
+            message: `📵 ${type.charAt(0).toUpperCase() + type.slice(1)} call not answered`,
+            is_system: true
+        }, true);
+
+        messagesBox.appendChild(wrapper);
+        messagesBox.scrollTop = messagesBox.scrollHeight;
+
+        socket.send(JSON.stringify({ type: "call_missed", call_type: type }));
+    }, RING_DURATION);
+}
+    if (toggleMicBtn) {
+        toggleMicBtn.onclick = () => {
+            if (!localStream) return;
+
+            micEnabled = !micEnabled;
+
+            localStream.getAudioTracks().forEach(track => {
+                track.enabled = micEnabled;
+            });
+
+            toggleMicBtn.textContent = micEnabled ? "🎤" : "🔇";
         };
+    }
 
 });
 

@@ -72,9 +72,7 @@
         <div class="flex items-center gap-2">
           <button id="startAudioCall" class="btn-ghost" title="Start voice call" aria-label="Start voice call">🔊</button>
           <button id="startVideoCall" class="btn-ghost" title="Start video call" aria-label="Start video call">🎥</button>
-          <button id="endCallBtn" class="btn-ghost hidden" title="End call" aria-hidden="true">⛔</button>
-          <button id="endVideoCallBtn" class="btn-ghost hidden" title="End video call">⛔🎥</button>
-        </div>
+         </div>
       </header>
 
    <!-- Messages area -->
@@ -132,12 +130,48 @@
     </main>
   </div>
 
-  <!-- Call box -->
-  <div id="callBox" class="fixed right-6 bottom-6 hidden z-50">
-    <video id="localVideo" autoplay muted playsinline class="local-video"></video>
-    <video id="remoteVideo" autoplay playsinline class="remote-video"></video>
-    <div id="callTimer" class="hidden text-white text-sm">00:00</div>
+<!-- CALL BOX -->
+<div id="callBox" class="fixed inset-0 flex flex-col justify-between bg-black bg-opacity-60 hidden pointer-events-none z-50">
+
+  <!-- CALL AVATAR / INFO (TOP) -->
+  <div class="flex flex-col items-center mt-6 text-white">
+    <div class="call-avatar w-16 h-16 rounded-full flex items-center justify-center text-xl font-bold">
+      {{ other_user.username|slice:":1"|upper }}
+    </div>
+    <div id="callTimer" class="mt-2 text-sm font-semibold hidden">00:00</div>
   </div>
+
+  <!-- REMOTE VIDEO -->
+  <video id="remoteVideo" autoplay playsinline class="remote-video hidden"></video>
+
+  <!-- LOCAL VIDEO (PIP) -->
+  <video id="localVideo" autoplay muted playsinline class="local-video hidden"></video>
+
+  <!-- AUDIO CALL LABEL (centered for audio-only) -->
+  <div id="audioCallUI" class="absolute inset-0 flex items-center justify-center text-white text-lg pointer-events-none">
+    📞 Audio call in progress
+  </div>
+
+  <!-- CALL CONTROLS (BOTTOM) -->
+  <div id="callControls" class="flex justify-center gap-6 p-4 mb-6">
+    <button id="toggleMicBtn" class="w-14 h-14 rounded-full bg-white text-xl shadow flex items-center justify-center">
+      🎤
+    </button>
+    <button id="endCallBtn" class="w-14 h-14 rounded-full bg-red-600 text-white text-xl shadow flex items-center justify-center">
+      ⛔
+    </button>
+    <button id="toggleCamBtn" class="w-14 h-14 rounded-full bg-white text-xl shadow flex items-center justify-center">
+      🎥
+    </button>
+    <!-- End video call button -->
+    <button id="endVideoCallBtn" class="w-14 h-14 rounded-full bg-red-600 text-white text-xl shadow flex items-center justify-center hidden">
+      ⛔
+    </button>
+  </div>
+</div>
+
+
+
 
   <div id="incomingCallBox" class="hidden fixed inset-0 bg-black/20 flex items-center justify-center z-50">
     <div class="bg-white p-6 rounded-xl text-center space-y-4 shadow-lg">
