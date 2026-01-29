@@ -235,6 +235,7 @@ function hideCallBox() {
     const rtcConfig = { iceServers: [{ urls: "stun:stun.l.google.com:19302" }] };
 
  /* -------------------- WebSocket -------------------- */
+
 const WS_PROTOCOL = location.protocol === "https:" ? "wss" : "ws";
 const WS_URL = `${WS_PROTOCOL}://${location.host}/ws/chat/${OTHER_USER_ID}/`;
 
@@ -258,9 +259,15 @@ function connect() {
         setTimeout(connect, reconnectDelay);
         reconnectDelay = Math.min(reconnectDelay * 1.5, 10000);
     };
+socket.onmessage = async (e) => {
+    const data = JSON.parse(e.data);
 
-    socket.onmessage = async (e) => {
-        const data = JSON.parse(e.data);
+    // Ignore your own voice note
+    if (data.type === "voice_note" && data.sender_id === CURRENT_USER_ID) {
+        return;
+    }
+
+    if (data.type === "message") handleIncomingMessage(data);
 
         /* ---------- Delivered ---------- */
         if (data.type === "delivered") {
@@ -280,10 +287,6 @@ function connect() {
             });
         }
 
-        /* ---------- Chat Message ---------- */
-        if (data.type === "message") {
-            handleIncomingMessage(data);
-        }
 
         /* ---------- Call Offer ---------- */
 if (data.type === "call_offer") {
@@ -411,13 +414,20 @@ function createBubbleDOM(payload, isMine, status = "sending...") {
 
     const bubble = document.createElement("article");
 
+    if (payload.voice_note) {
+    bubble.classList.add("voice");
+    content = `<audio controls src="${payload.voice_note}"></audio>`;
+    }
+
+
     // System messages get their own style
     if (payload.is_system) {
         bubble.className = "max-w-[75%] p-3 rounded-xl relative bg-gray-300 text-gray-800 text-center italic";
         bubble.textContent = payload.message || "";
     } else {
         bubble.className =
-            "max-w-[75%] p-3 rounded-xl relative message-bubble " +
+        "max-w-[75%] p-3 rounded-xl relative message-card " +
+
             (isMine ? "bg-orange-500 text-white" : "bg-slate-700 text-white");
 
         let content = "";
@@ -452,13 +462,27 @@ function handleIncomingMessage(data) {
     const isSystem = data.is_system || false; // we will mark system messages
 
     // If we already have a pending bubble, update its status
-    if (!isSystem && data.client_id && pendingClientMap[data.client_id]) {
+    if (
+        !isSystem &&
+        data.client_id &&
+        pendingClientMap[data.client_id]
+    ) {
         const bubble = pendingClientMap[data.client_id];
         const statusEl = bubble.querySelector('[data-status]');
         if (statusEl) statusEl.textContent = "sent ✔";
+        
+        // Update bubble with real URL if it's a voice note
+        if (data.voice_note) {
+            const audioEl = bubble.querySelector('audio');
+            if (audioEl) {
+                audioEl.src = data.voice_note;
+            }
+        }
+        
         delete pendingClientMap[data.client_id];
         return;
     }
+
 
     // Create bubble
     const { wrapper } = createBubbleDOM(data, isMine, isMine && !isSystem ? "delivered ✔" : null, isSystem);
@@ -503,17 +527,35 @@ function handleIncomingMessage(data) {
 
 
    /* -------------------- Voice Note (WhatsApp style) -------------------- */
+let recordingInProgress = false;
+let voiceNoteSending = false;
+
 recordBtn.addEventListener("click", async () => {
     console.log("🎙 Click | isRecording:", isRecording);
 
     try {
         if (!isRecording) {
+            // Prevent multiple clicks
+            if (voiceNoteSending) return;
+            
             // ▶ START RECORDING
-            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            const stream = await navigator.mediaDevices.getUserMedia({
+                audio: {
+                    channelCount: 1,
+                    echoCancellation: true,
+                    noiseSuppression: true,
+                    autoGainControl: true
+                }
+            });
 
-            mediaRecorder = new MediaRecorder(stream);
+            mediaRecorder = new MediaRecorder(stream, {
+                mimeType: "audio/webm;codecs=opus"
+            });
+
             audioChunks = [];
             isRecording = true;
+            recordingInProgress = false;
+            voiceNoteSending = false;
 
             // ✅ VISUAL STATE
             recordBtn.classList.add("recording");
@@ -522,6 +564,10 @@ recordBtn.addEventListener("click", async () => {
             mediaRecorder.ondataavailable = e => audioChunks.push(e.data);
 
             mediaRecorder.onstop = async () => {
+                // Prevent double execution
+                if (recordingInProgress) return;
+                recordingInProgress = true;
+                
                 clearInterval(recordTimer);
                 recordTimer = null;
 
@@ -543,13 +589,20 @@ recordBtn.addEventListener("click", async () => {
                 pendingClientMap[client_id] = bubble;
 
                 const reader = new FileReader();
-                reader.onload = () => {
+                reader.onload = async () => {
+                    // Prevent duplicate sends
+                    if (voiceNoteSending) return;
+                    voiceNoteSending = true;
+                    
                     socket.send(JSON.stringify({
                         type: "voice_note",
                         client_id,
                         audio_data: reader.result.split(",")[1],
                         mime_type: audioBlob.type
                     }));
+                    
+                    // Allow new voice notes after a delay
+                    setTimeout(() => { voiceNoteSending = false; }, 1000);
                 };
                 reader.readAsDataURL(audioBlob);
 
@@ -711,71 +764,6 @@ acceptCallBtn.onclick = async () => {
             socket.send(JSON.stringify({ type: "call_end" }));
         }
     }
-
-
-  // ----------- start AUDIO call ----------- //
-callBtn.onclick = async () => {
-    unlockAudio();
-    isCaller = true;
-    currentCallType = "audio";
-
-    endCallBtn.classList.remove("hidden");
-    callBtn.classList.add("hidden");
-    startVideoCallBtn.classList.add("hidden");
-
-    showCallBox("audio"); // <<< use this
-
-    localStream = await navigator.mediaDevices.getUserMedia({ audio: true });
-    peerConnection = new RTCPeerConnection(rtcConfig);
-    localStream.getTracks().forEach(track =>
-        peerConnection.addTrack(track, localStream)
-    );
-    peerConnection.ontrack = e => {
-        remoteAudio.srcObject = e.streams[0];
-    };
-    peerConnection.onicecandidate = e => {
-        if (e.candidate) {
-            socket.send(JSON.stringify({
-                type: "ice_candidate",
-                candidate: e.candidate
-            }));
-        }
-    };
-
-    const offer = await peerConnection.createOffer();
-    await peerConnection.setLocalDescription(offer);
-
-    socket.send(JSON.stringify({
-        type: "call_offer",
-        offer,
-        caller_id: CURRENT_USER_ID,
-        call_type: "audio"
-    }));
-
-    // ⏱ Caller side ring timeout
-    ringTimeout = setTimeout(() => {
-        console.log("📵 Call not answered (caller timeout)");
-
-        stopCallTone();
-        endCallCleanup(false);
-
-        // ✅ Add system message bubble for missed call
-        const { wrapper } = createBubbleDOM(
-            { message: "📵 Audio call not answered", is_system: true },
-            true
-        );
-        messagesBox.appendChild(wrapper);
-        messagesBox.scrollTop = messagesBox.scrollHeight;
-
-        // Optionally, notify the receiver (if needed)
-        socket.send(JSON.stringify({
-            type: "call_missed",
-            call_type: "audio"
-        }));
-
-    }, RING_DURATION);
-};
-
 
 
 /* -------------------- Start Audio Call -------------------- */
