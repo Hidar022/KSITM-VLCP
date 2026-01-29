@@ -33,3 +33,5 @@ tzdata==2025.2
 ujson==5.11.0
 whitenoise==6.11.0
 zope.interface==8.1.1
+django-storages==1.14.2
+boto3==1.26.137
