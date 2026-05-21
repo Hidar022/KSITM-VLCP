@@ -254,6 +254,10 @@
             });
         };
 
+        socket.onerror = (err) => {
+            console.error("❌ WebSocket error:", err);
+        };
+
         socket.onclose = () => {
             console.warn("⚠️ WebSocket closed, reconnecting...");
             setTimeout(connect, reconnectDelay);

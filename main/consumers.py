@@ -25,6 +25,12 @@ class ChatConsumer(AsyncWebsocketConsumer):
         uid2 = int(self.other_user_id)
         self.room_name = f"chat_{min(uid1, uid2)}_{max(uid1, uid2)}"
 
+        # Debug log: show connection info in server terminal
+        try:
+            print(f"[ChatConsumer] connect: user={self.user.id} other_user={self.other_user_id} room={self.room_name}")
+        except Exception:
+            pass
+
         await self.channel_layer.group_add(self.room_name, self.channel_name)
         await self.accept()
 
@@ -52,6 +58,12 @@ class ChatConsumer(AsyncWebsocketConsumer):
     async def receive(self, text_data=None, bytes_data=None):
         data = json.loads(text_data or "{}")
         dtype = data.get("type")
+
+        # Debug log: incoming message type
+        try:
+            print(f"[ChatConsumer] receive from={self.user.id} type={dtype}")
+        except Exception:
+            pass
 
         sender = self.user
         receiver_user = await self.get_user(int(self.other_user_id))

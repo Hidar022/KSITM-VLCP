@@ -3,10 +3,6 @@ import os
 from urllib.parse import urlparse
 import dj_database_url
 
-# force railway rebuild
-# Force Railway deploy for static changes
-
-
 # ------------------------------
 # BASE DIR
 # ------------------------------
@@ -15,21 +11,26 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 STATIC_VERSION = 2
 
 # ------------------------------
-# SECURITY
+# SECURITY & PLATFORM DETECTION
 # ------------------------------
 SECRET_KEY = os.environ.get("SECRET_KEY", "dev-secret-key")
 
-# Detect if we are on Railway
-RAILWAY = os.environ.get("RAILWAY_ENV")
+# Detect if we are running on Vercel
+VERCEL = os.environ.get("VERCEL") == "1"
 
-DEBUG = os.environ.get("DEBUG", "True") == "True" if not RAILWAY else False
+DEBUG = os.environ.get("DEBUG", "True") == "True" if not VERCEL else False
 
 # ------------------------------
 # HOSTS & CSRF
 # ------------------------------
-if RAILWAY:
-    ALLOWED_HOSTS = ["ksitm-vlcp-production.up.railway.app"]
-    CSRF_TRUSTED_ORIGINS = ["https://ksitm-vlcp-production.up.railway.app"]
+if VERCEL:
+    # Vercel provides the current deployment URL via VERCEL_URL
+    VERCEL_URL = os.environ.get("VERCEL_URL")
+    ALLOWED_HOSTS = [".vercel.app"]
+    if VERCEL_URL:
+        ALLOWED_HOSTS.append(VERCEL_URL)
+        
+    CSRF_TRUSTED_ORIGINS = ["https://*.vercel.app"]
 else:
     ALLOWED_HOSTS = os.environ.get(
         "ALLOWED_HOSTS", "127.0.0.1,localhost"
@@ -40,7 +41,7 @@ else:
     ).split(",")
 
 # ------------------------------
-# 🚨 CRITICAL FIX FOR RAILWAY (CSRF + HTTPS PROXY)
+# 🚨 CRITICAL FIX FOR PROXY (CSRF + HTTPS)
 # ------------------------------
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 
@@ -54,7 +55,7 @@ SESSION_COOKIE_SAMESITE = "Lax"
 WHITENOISE_MAX_AGE = 0
 
 # ------------------------------
-# MEDIA
+# MEDIA (Vercel has a read-only filesystem; uploads require S3/Cloudinary)
 # ------------------------------
 MEDIA_URL = os.environ.get("MEDIA_URL", "/media/")
 MEDIA_ROOT = os.path.join(BASE_DIR, "media")
@@ -75,7 +76,7 @@ INSTALLED_APPS = [
 
     # Third-party
     "widget_tweaks",
-    "channels",
+    "channels",  # Note: Channels/WebSockets won't work in serverless mode
 ]
 
 # ------------------------------
@@ -113,14 +114,17 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = "ksitm_vlcp.wsgi.application"
-ASGI_APPLICATION = "ksitm_vlcp.asgi.application"
+# ASGI is pulled out because Vercel builds deploy around WSGI serverless entry points
+# ASGI_APPLICATION = "ksitm_vlcp.asgi.application" 
 
 # ------------------------------
-# DATABASE
+# DATABASE (Use live database string on Vercel)
 # ------------------------------
 DATABASES = {
     "default": dj_database_url.config(
-        default=f"sqlite:///{BASE_DIR / 'db.sqlite3'}"
+        env="DATABASE_URL",
+        default=f"sqlite:///{BASE_DIR / 'db.sqlite3'}",
+        conn_max_age=600, # Recommended for remote serverless database connections
     )
 }
 
@@ -151,28 +155,13 @@ STATIC_ROOT = BASE_DIR / "staticfiles"
 STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
 # ------------------------------
-# CHANNELS (Redis)
+# CHANNELS (Disabled for Vercel Serverless environment)
 # ------------------------------
-REDIS_URL = os.environ.get("REDIS_URL")
-
-if REDIS_URL:
-    redis_url = urlparse(REDIS_URL)
-    CHANNEL_LAYERS = {
-        "default": {
-            "BACKEND": "channels_redis.core.RedisChannelLayer",
-            "CONFIG": {
-                "hosts": [
-                    f"{redis_url.scheme}://:{redis_url.password}@{redis_url.hostname}:{redis_url.port}/0"
-                ],
-            },
-        },
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels.layers.InMemoryChannelLayer",
     }
-else:
-    CHANNEL_LAYERS = {
-        "default": {
-            "BACKEND": "channels.layers.InMemoryChannelLayer",
-        }
-    }
+}
 
 # ------------------------------
 # EMAIL

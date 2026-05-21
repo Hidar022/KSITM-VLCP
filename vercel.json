@@ -1,0 +1,16 @@
+{
+  "version": 2,
+  "builds": [
+    {
+      "src": "ksitm_vlcp/wsgi.py",
+      "use": "@vercel/python",
+      "config": { "maxDuration": 90 }
+    }
+  ],
+  "routes": [
+    {
+      "src": "/(.*)",
+      "dest": "ksitm_vlcp/wsgi.py"
+    }
+  ]
+}
