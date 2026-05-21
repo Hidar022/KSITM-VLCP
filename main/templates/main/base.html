@@ -6,45 +6,151 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}KSITM Virtual Learning Platform{% endblock %}</title>
 
-    <!-- Bootstrap 5 -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 
-    <!-- AOS -->
     <link rel="stylesheet" href="https://unpkg.com/aos@2.3.1/dist/aos.css">
 
-    <!-- Animate.css -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
 
-    <!-- Bootstrap Icons -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
 
-    <!-- Custom CSS -->
     <link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
     <link rel="stylesheet" href="{% static 'css/responsive.css' %}">
     <link rel="stylesheet" href="{% static 'css/base_custom.css' %}">
+    
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
+    <style>
+        /* Base Global Overrides for Light Theme Consistency */
+        body {
+            background-color: #f8f9fa !important;
+            color: #111827 !important;
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            padding-top: 75px; /* Prevent fixed navbar from eating content page headers */
+        }
+
+        /* Branding Navbar Layout Styles */
+        .navbar {
+            background-color: #ffffff !important;
+            border-bottom: 1px solid #e5e7eb;
+            transition: all 0.25s ease;
+        }
+
+        .brand-logo {
+            width: 45px;
+            height: 45px;
+            object-fit: contain;
+        }
+
+        .brand-title {
+            font-size: 1.05rem;
+            font-weight: 800;
+            line-height: 1.1;
+            color: #111827;
+            letter-spacing: -0.2px;
+        }
+
+        .brand-title .highlight {
+            color: #F58634 !important; /* Electric Orange Accent */
+        }
+
+        .brand-title small {
+            font-size: 0.72rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+            color: #4b5563 !important;
+        }
+
+        /* Navigation Links UI Hooks */
+        .navbar-nav .nav-link {
+            color: #374151 !important;
+            font-weight: 600 !important;
+            font-size: 0.95rem;
+            padding: 0.5rem 1rem !important;
+            transition: color 0.2s ease;
+        }
+
+        .navbar-nav .nav-link:hover {
+            color: #F58634 !important;
+        }
+
+        /* Electric Orange Core CTA Link */
+        .btn-brand-nav {
+            background-color: #F58634 !important;
+            border-color: #F58634 !important;
+            color: #ffffff !important;
+            font-weight: 600 !important;
+            font-size: 0.9rem !important;
+            padding: 0.45rem 1.25rem !important;
+            border-radius: 6px !important;
+            transition: all 0.2s ease-in-out !important;
+        }
+
+        .btn-brand-nav:hover {
+            background-color: #ea580c !important;
+            border-color: #ea580c !important;
+            box-shadow: 0 4px 10px rgba(245, 134, 52, 0.2);
+        }
+
+        /* Structural Error Flash Alerts Frame */
+        .flash-container {
+            position: relative;
+            z-index: 1050;
+        }
+
+        /* Universal Footer Block */
+        footer {
+            background-color: #ffffff !important;
+            border-top: 1px solid #e5e7eb;
+            color: #111827 !important;
+        }
+
+        .footer-logo {
+            width: 50px;
+            height: 50px;
+            object-fit: contain;
+        }
+
+        footer h6 {
+            color: #111827 !important;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 1rem;
+        }
+
+        footer a {
+            color: #4b5563 !important;
+            transition: color 0.2s ease;
+            font-size: 0.95rem;
+        }
+
+        footer a:hover {
+            color: #F58634 !important;
+            text-decoration: underline !important;
+        }
+
+        footer p, footer small {
+            color: #4b5563 !important;
+        }
+    </style>
 
     {% block extra_css %}{% endblock %}
 </head>
+<body>
 
-<body class="bg-light text-dark">
-
-<!-- Navbar -->
-<nav class="navbar navbar-expand-lg fixed-top bg-white shadow-sm">
+<nav class="navbar navbar-expand-lg fixed-top shadow-sm">
     <div class="container">
         <a class="navbar-brand d-flex align-items-center" href="/">
-            <img src="{% static 'images/ksitm_logo.png' %}"
-                 class="brand-logo me-2"
-                 alt="KSITM Logo">
+            <img src="{% static 'images/ksitm_logo.png' %}" class="brand-logo me-2" alt="KSITM Logo">
             <span class="brand-title">
                 KSITM <span class="highlight">VIRTUAL LEARNING</span><br>
-                <small class="text-dark">AND Collaboration Platform</small>
+                <small>And Collaboration Platform</small>
             </span>
         </a>
 
-        <button class="navbar-toggler" type="button"
-                data-bs-toggle="collapse" data-bs-target="#navbarNav">
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
             <span class="navbar-toggler-icon"></span>
         </button>
 
@@ -52,30 +158,28 @@
             <ul class="navbar-nav align-items-lg-center gap-lg-2">
                 {% if user.is_authenticated %}
                     <li class="nav-item">
-                        <a class="nav-link fw-semibold text-dark" href="{% url 'dashboard' %}">
-                            <i class="bi bi-speedometer2"></i> Dashboard
+                        <a class="nav-link" href="{% url 'dashboard' %}">
+                            <i class="bi bi-speedometer2 me-1"></i> Dashboard
                         </a>
                     </li>
                     <li class="nav-item">
-                        <form method="post" action="{% url 'site_logout' %}">
+                        <form method="post" action="{% url 'site_logout' %}" class="d-inline">
                             {% csrf_token %}
-                            <button type="submit"
-                                    class="btn btn-outline-danger btn-sm ms-lg-2 mt-2 mt-lg-0">
+                            <button type="submit" class="btn btn-outline-danger btn-sm ms-lg-2 mt-2 mt-lg-0 px-3 fw-semibold" style="border-radius: 6px;">
                                 Logout
                             </button>
                         </form>
                     </li>
                 {% else %}
                     <li class="nav-item">
-                        <a class="nav-link fw-semibold text-dark" href="/">Home</a>
+                        <a class="nav-link" href="/">Home</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link fw-semibold text-dark" href="/courses">Courses</a>
+                        <a class="nav-link" href="/courses">Courses</a>
                     </li>
                     <li class="nav-item">
-                        <a class="btn btn-warning btn-sm fw-semibold ms-lg-2 mt-2 mt-lg-0"
-                           href="{% url 'login' %}">
-                            Login
+                        <a class="btn btn-brand-nav ms-lg-2 mt-2 mt-lg-0" href="{% url 'login' %}">
+                            Login Portal
                         </a>
                     </li>
                 {% endif %}
@@ -84,11 +188,10 @@
     </div>
 </nav>
 
-<!-- Flash Messages -->
 <div class="container flash-container">
     {% if messages %}
         {% for message in messages %}
-            <div class="alert alert-{{ message.tags|default:'info' }} alert-dismissible fade show mt-3">
+            <div class="alert alert-{{ message.tags|default:'info' }} alert-dismissible fade show mt-3 shadow-sm border-0">
                 {{ message }}
                 <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
             </div>
@@ -96,47 +199,43 @@
     {% endif %}
 </div>
 
-<!-- Hero Section -->
 {% block hero %}{% endblock hero %}
 
-<!-- Main Content -->
 {% block page_wrapper %}
-<div class="container py-5">
+<div class="container py-4">
     {% block content %}{% endblock content %}
 </div>
 {% endblock %}
 
-<!-- Footer -->
 {% if not hide_footer %}
-<footer class="bg-white border-top mt-5 text-dark">
-    <div class="container py-4">
+<footer class="mt-5 py-5">
+    <div class="container">
         <div class="row text-center text-md-start g-4">
 
-            <div class="col-md-4" data-aos="fade-up">
-                <img src="{% static 'images/ksitm_logo.png' %}"
-                     class="footer-logo mb-2"
-                     alt="KSITM Logo">
-                <p class="fw-bold mb-0">Katsina State Institute of IT Management</p>
-                <small class="text-muted">© <span id="year"></span></small>
+            <div class="col-md-5" data-aos="fade-up">
+                <img src="{% static 'images/ksitm_logo.png' %}" class="footer-logo mb-3" alt="KSITM Logo">
+                <p class="fw-bold mb-1" style="font-size: 1.05rem;">Katsina State Institute of Technology and Management</p>
+                <small class="d-block text-muted">Computer Software Engineering Department</small>
+                <small class="text-muted d-block mt-2">© <span id="year"></span> All Rights Reserved</small>
             </div>
 
-            <div class="col-md-4" data-aos="fade-up" data-aos-delay="150">
-                <h6 class="fw-bold">Quick Links</h6>
-                <ul class="list-unstyled">
-                    <li><a href="/" class="text-dark text-decoration-none">Home</a></li>
-                    <li><a href="/courses" class="text-dark text-decoration-none">Courses</a></li>
-                    <li><a href="/login" class="text-dark text-decoration-none">Login</a></li>
+            <div class="col-md-3 offset-md-1" data-aos="fade-up" data-aos-delay="100">
+                <h6>Quick Navigation</h6>
+                <ul class="list-unstyled d-flex flex-column gap-2">
+                    <li><a href="/" class="text-decoration-none">Home Terminal</a></li>
+                    <li><a href="/courses" class="text-decoration-none">Explore Courses</a></li>
+                    <li><a href="/login" class="text-decoration-none">Secure Login</a></li>
                 </ul>
             </div>
 
-            <div class="col-md-4" data-aos="fade-up" data-aos-delay="300">
-                <h6 class="fw-bold">Contact</h6>
-                <p class="mb-1 text-dark">Email: info@ksitm.edu.ng</p>
-                <p class="mb-1 text-dark">Phone: +234 123 456 7890</p>
-                <div class="d-flex justify-content-center justify-content-md-start gap-3 mt-2 text-dark">
-                    <i class="bi bi-facebook fs-5"></i>
-                    <i class="bi bi-twitter fs-5"></i>
-                    <i class="bi bi-instagram fs-5"></i>
+            <div class="col-md-3" data-aos="fade-up" data-aos-delay="200">
+                <h6>Institutional Support</h6>
+                <p class="mb-1 small"><i class="bi bi-envelope-at me-2 text-warning"></i>info@ksitm.edu.ng</p>
+                <p class="mb-3 small"><i class="bi bi-telephone me-2 text-warning"></i>+234 123 456 7890</p>
+                <div class="d-flex justify-content-center justify-content-md-start gap-3 mt-2">
+                    <a href="#" class="fs-5 text-secondary"><i class="bi bi-facebook"></i></a>
+                    <a href="#" class="fs-5 text-secondary"><i class="bi bi-twitter-x"></i></a>
+                    <a href="#" class="fs-5 text-secondary"><i class="bi bi-instagram"></i></a>
                 </div>
             </div>
 
@@ -149,13 +248,13 @@
 </script>
 {% endif %}
 
-<!-- Scripts -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
 <script>
     AOS.init({
-        duration: 900,
-        once: true
+        duration: 800,
+        once: true,
+        easing: 'ease-in-out'
     });
 </script>
 

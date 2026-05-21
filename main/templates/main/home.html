@@ -3,58 +3,117 @@
 
 {% block title %}Home - KSITM VLCP{% endblock %}
 
+<style>
+/* Synchronized Home Interface Overrides */
+.hero-section {
+    background: #ffffff !important;
+    color: #111827 !important;
+}
+
+.card.hover-card {
+    background: #ffffff !important;
+    border: 1px solid #e5e7eb !important;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05) !important;
+    transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.3s ease;
+}
+
+.card.hover-card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 15px 20px -5px rgba(245, 134, 52, 0.12) !important;
+    border-color: rgba(245, 134, 52, 0.25) !important;
+}
+
+h1, h2, h5 {
+    color: #111827 !important;
+    font-weight: 700 !important;
+}
+
+p {
+    color: #4b5563 !important;
+}
+
+.btn-warning {
+    background-color: #F58634 !important;
+    border-color: #F58634 !important;
+    color: #ffffff !important;
+    font-weight: 600 !important;
+    padding: 0.75rem 2rem !important;
+    border-radius: 8px !important;
+}
+
+.btn-warning:hover {
+    background-color: #ea580c !important;
+    border-color: #ea580c !important;
+    box-shadow: 0 4px 12px rgba(245, 134, 52, 0.3) !important;
+}
+
+.floating-img {
+    animation: floatHero 6s ease-in-out infinite;
+}
+@keyframes floatHero {
+    0% { transform: translateY(0px); }
+    50% { transform: translateY(-10px); }
+    100% { transform: translateY(0px); }
+}
+</style>
+
 {% block hero %}
-<section class="container py-5 hero-section position-relative">
+<section class="container py-5 hero-section position-relative" style="background:#ffffff;">
     <div class="row align-items-center">
-        <!-- Left Text -->
-        <div class="col-md-6 text-center text-md-start" data-aos="fade-up">
-            <h1 class="fw-bold mb-3" style="color:#0f172a;">
+        <div class="col-md-6 text-center text-md-start" data-aos="fade-up" data-aos-duration="800">
+            <h1 class="display-5 mb-3">
                 Empower Your <span style="color:#F58634;">Journey</span> in Learning & Collaboration
             </h1>
-            <p class="lead mb-3" style="color:#374151;">
+            <p class="lead mb-4">
                 Connect, learn, share knowledge, and grow together — anywhere, anytime.
             </p>
-            <a href="/register" class="btn btn-warning btn-lg mt-3 w-100 w-md-auto animate__animated animate__pulse animate__infinite">
+            <a href="/register" class="btn btn-warning btn-lg d-inline-block shadow-sm">
                 Get Started
             </a>
         </div>
 
-        <!-- Right Hero Image -->
-        <div class="col-md-6 text-center mt-4 mt-md-0" data-aos="zoom-in">
-            <img src="{% static 'images/hero_students.png' %}" class="img-fluid rounded-4 shadow-lg floating-img" alt="Learning">
+        <div class="col-md-6 text-center mt-5 mt-md-0" data-aos="zoom-in" data-aos-duration="800">
+            <img src="{% static 'images/hero_students.png' %}" class="img-fluid rounded-4 shadow-sm floating-img" alt="Learning" style="max-height:400px;">
         </div>
     </div>
 
-    <!-- Optional Floating Shapes -->
-    <div class="floating-shape" style="width:100px;height:100px;background: rgba(245,134,52,0.15);border-radius:50%;top:10%;left:5%;animation:float1 12s infinite alternate;"></div>
-    <div class="floating-shape" style="width:80px;height:80px;background: rgba(56,189,248,0.15);border-radius:50%;top:30%;right:10%;animation:float2 14s infinite alternate;"></div>
+    <div class="position-absolute" style="width:100px;height:100px;background: rgba(245,134,52,0.05);border-radius:50%;top:10%;left:5%;pointer-events:none;"></div>
+    <div class="position-absolute" style="width:80px;height:80px;background: rgba(56,189,248,0.05);border-radius:50%;top:30%;right:10%;pointer-events:none;"></div>
 </section>
 {% endblock hero %}
 
 {% block content %}
-<!-- Features Section -->
-<section class="container py-5">
-    <h2 class="text-center fw-bold mb-5" style="color:#0f172a;" data-aos="fade-up">Why Choose KSITM VLCP?</h2>
+<section class="container py-5" style="background:#ffffff;">
+    <h2 class="text-center mb-5" data-aos="fade-up">Why Choose KSITM VLCP?</h2>
+    
     <div class="row g-4">
-        <div class="col-md-4" data-aos="zoom-in">
-            <div class="card border-0 shadow-sm hover-card p-3" style="background:#f8f9fa;">
-                <img src="{% static 'images/icon_learning.png' %}" class="mx-auto d-block" style="height:80px;">
-                <h5 class="text-center fw-bold mt-3" style="color:#0f172a;">Modern E-Learning</h5>
-                <p class="text-center" style="color:#374151;">Access course materials, lectures, and live sessions.</p>
+        <div class="col-md-4" data-aos="zoom-in" data-aos-duration="600">
+            <div class="card border-0 hover-card p-4 text-center">
+                <div class="mb-3">
+                    <img src="{% static 'images/icon_learning.png' %}" alt="Learning Icon" style="height:70px; object-fit:contain;">
+                </div>
+                <h5>Modern E-Learning</h5>
+                <p class="small mb-0">Access course materials, lectures, and live sessions easily.</p>
             </div>
         </div>
-        <div class="col-md-4" data-aos="zoom-in" data-aos-delay="150">
-            <div class="card border-0 shadow-sm hover-card p-3" style="background:#f8f9fa;">
-                <img src="{% static 'images/icon_chat.png' %}" class="mx-auto d-block" style="height:80px;">
-                <h5 class="text-center fw-bold mt-3" style="color:#0f172a;">Collaboration Tools</h5>
-                <p class="text-center" style="color:#374151;">Discuss ideas, ask questions, and solve problems together.</p>
+        
+        <div class="col-md-4" data-aos="zoom-in" data-aos-duration="600" data-aos-delay="150">
+            <div class="card border-0 hover-card p-4 text-center">
+                <div class="mb-3">
+                    <img src="{% static 'images/icon_chat.png' %}" alt="Chat Icon" style="height:70px; object-fit:contain;">
+                </div>
+                <h5>Collaboration Tools</h5>
+                <p class="small mb-0">Discuss ideas, ask questions, and solve engineering challenges together.</p>
             </div>
         </div>
-        <div class="col-md-4" data-aos="zoom-in" data-aos-delay="300">
-            <div class="card border-0 shadow-sm hover-card p-3" style="background:#f8f9fa;">
-                <img src="{% static 'images/icon_cert.png' %}" class="mx-auto d-block" style="height:80px;">
-                <h5 class="text-center fw-bold mt-3" style="color:#0f172a;">Certified Programs</h5>
-                <p class="text-center" style="color:#374151;">Study approved NID programs recognized nationwide.</p>
+        
+        <div class="col-md-4" data-aos="zoom-in" data-aos-duration="600" data-aos-delay="300">
+            <div class="card border-0 hover-card p-4 text-center">
+                <div class="mb-3">
+                    <img src="{% static 'images/icon_cert.png' %}" alt="Cert Icon" style="height:70px; object-fit:contain;">
+                </div>
+                <h5>Certified Programs</h5>
+                <p class="small mb-0">Study approved NID programs recognized and certified nationwide.</p>
             </div>
         </div>
     </div>

@@ -1,229 +1,338 @@
 {% extends 'main/base.html' %}
 {% load static %}
 
-{% block title %}Welcome - KSITM Virtual Learning Platform{% endblock %}
+{% block title %}KSITM VLCP - Virtual Learning & Collaboration Platform{% endblock %}
 
 {% block content %}
+<link href="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.css" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
 <style>
-/* Hover Animations for Cards */
-.hover-card {
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-}
-.hover-card:hover {
-    transform: scale(1.05);
-    box-shadow: 0 15px 25px rgba(245, 134, 52, 0.3);
-}
+    /* Global Core Light Mode Aesthetics */
+    :root {
+        --brand-orange: #F58634;
+        --brand-orange-hover: #ea580c;
+        --dark-charcoal: #111827;
+        --text-muted: #4b5563;
+        --light-bg-gradient: linear-gradient(135deg, #ffffff 0%, #f3f4f6 100%);
+    }
 
-/* Hero Button Pulse */
-.btn-warning.animate__pulse {
-    animation: pulse 2s infinite;
-}
-@keyframes pulse {
-    0% { transform: scale(1); }
-    50% { transform: scale(1.05); }
-    100% { transform: scale(1); }
-}
+    body {
+        background-color: #ffffff;
+        color: var(--dark-charcoal);
+        font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    }
 
-/* Hero Image Floating Slightly */
-.floating-img {
-    animation: floatHero 6s ease-in-out infinite;
-}
-@keyframes floatHero {
-    0% { transform: translateY(0px); }
-    50% { transform: translateY(-10px); }
-    100% { transform: translateY(0px); }
-}
+    h1, h2, h3, h4, h5, h6 {
+        color: var(--dark-charcoal) !important;
+        font-weight: 700;
+    }
 
-/* Floating Shapes */
-.floating-shape {
-    position: absolute;
-    pointer-events: none;
-}
-@keyframes float1 {
-    0% { transform: translateY(0) translateX(0); }
-    50% { transform: translateY(-20px) translateX(10px); }
-    100% { transform: translateY(0) translateX(0); }
-}
-@keyframes float2 {
-    0% { transform: translateY(0) translateX(0); }
-    50% { transform: translateY(-15px) translateX(-10px); }
-    100% { transform: translateY(0) translateX(0); }
-}
-@keyframes float3 {
-    0% { transform: translateY(0) translateX(0); }
-    50% { transform: translateY(-25px) translateX(15px); }
-    100% { transform: translateY(0) translateX(0); }
-}
+    p {
+        color: var(--text-muted);
+        line-height: 1.6;
+    }
 
-/* Hero Section Light Theme */
-.hero-section {
-    background: linear-gradient(135deg, #fefefe 0%, #f0f4f8 100%);
-    overflow: hidden;
-    color: #0f172a;
-}
+    /* Primary Accent Buttons */
+    .btn-brand {
+        background-color: var(--brand-orange) !important;
+        border-color: var(--brand-orange) !important;
+        color: #ffffff !important;
+        font-weight: 600;
+        padding: 0.8rem 2rem;
+        border-radius: 8px;
+        transition: all 0.25s ease-in-out;
+    }
 
-/* About, Courses, Collab Sections */
-.about-section,
-.courses-section,
-.collab-section {
-    background: #ffffff;
-    color: #0f172a;
-}
+    .btn-brand:hover {
+        background-color: var(--brand-orange-hover) !important;
+        border-color: var(--brand-orange-hover) !important;
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(245, 134, 52, 0.25);
+    }
 
-/* Cards Background & Text */
-.card.hover-card {
-    background: #f8f9fa !important;
-    color: #0f172a !important;
-}
-.card.hover-card .card-body {
-    background: rgba(248, 249, 250, 0.85) !important;
-}
+    .btn-brand-outline {
+        background: transparent;
+        border: 2px solid var(--brand-orange);
+        color: var(--brand-orange);
+        font-weight: 600;
+        padding: 0.8rem 2rem;
+        border-radius: 8px;
+        transition: all 0.25s ease-in-out;
+    }
 
-/* Buttons */
-.btn-warning {
-    background-color: #F58634;
-    border-color: #F58634;
-}
-.btn-warning:hover {
-    background-color: #e07a1f;
-    border-color: #e07a1f;
-}
+    .btn-brand-outline:hover {
+        background: var(--brand-orange);
+        color: #ffffff;
+        transform: translateY(-2px);
+    }
 
-/* Responsive adjustments */
-@media (max-width: 768px) {
-    .hero-section h1 { font-size: 2rem; }
-    .hero-section p { font-size: 1rem; }
-}
+    /* Premium Fluid Hover Cards */
+    .premium-card {
+        background: #ffffff;
+        border: 1px solid #e5e7eb;
+        border-radius: 16px;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.03);
+        transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .premium-card:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 20px 30px -10px rgba(0, 0, 0, 0.07), 0 10px 15px -5px rgba(245, 134, 52, 0.1);
+        border-color: rgba(245, 134, 52, 0.3);
+    }
+
+    /* Hero Component Floating Mechanics */
+    .hero-wrapper {
+        background: var(--light-bg-gradient);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .floating-img {
+        animation: floatHero 6s ease-in-out infinite;
+    }
+    @keyframes floatHero {
+        0%, 100% { transform: translateY(0px); }
+        50% { transform: translateY(-15px); }
+    }
+
+    /* Live Badge Indicators */
+    .live-pulse-badge {
+        display: inline-flex;
+        align-items: center;
+        background: rgba(245, 134, 52, 0.1);
+        color: var(--brand-orange);
+        padding: 0.5rem 1rem;
+        border-radius: 50px;
+        font-weight: 600;
+        font-size: 0.85rem;
+        letter-spacing: 0.5px;
+        text-transform: uppercase;
+        margin-bottom: 1.5rem;
+    }
+
+    .pulse-dot {
+        width: 8px;
+        height: 8px;
+        background: var(--brand-orange);
+        border-radius: 50%;
+        margin-right: 8px;
+        animation: pulseAnimation 1.5s infinite;
+    }
+    @keyframes pulseAnimation {
+        0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(245, 134, 52, 0.7); }
+        70% { transform: scale(1); box-shadow: 0 0 0 6px rgba(245, 134, 52, 0); }
+        100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(245, 134, 52, 0); }
+    }
+
+    /* Features Grid Accent Vectors */
+    .icon-box {
+        width: 60px;
+        height: 60px;
+        border-radius: 12px;
+        background: rgba(245, 134, 52, 0.08);
+        color: var(--brand-orange);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        margin-bottom: 1.25rem;
+    }
 </style>
 
-<!-- Hero Section -->
-<section class="container-fluid py-5 position-relative hero-section">
-    <!-- Floating Shapes -->
-    <div class="floating-shape" style="width:120px;height:120px;background: rgba(245,134,52,0.2);border-radius:50%;top:10%;left:5%;animation:float1 10s infinite alternate;"></div>
-    <div class="floating-shape" style="width:80px;height:80px;background: rgba(56,189,248,0.2);border-radius:50%;top:30%;right:10%;animation:float2 12s infinite alternate;"></div>
-    <div class="floating-shape" style="width:100px;height:100px;background: rgba(251,191,36,0.15);border-radius:50%;bottom:15%;left:25%;animation:float3 14s infinite alternate;"></div>
-
-    <div class="container position-relative">
+<section class="hero-wrapper py-5">
+    <div class="container position-relative py-4" style="z-index: 2;">
         <div class="row align-items-center">
-            <!-- Left Text -->
-            <div class="col-md-6" data-aos="fade-right" data-aos-duration="1200">
-                <h1 class="fw-bold display-4 mb-3">Empower Your Learning <span style="color:#F58634;">Journey</span></h1>
-                <p class="lead mb-3">
-                    KSITM Virtual Learning & Collaboration Platform connects students and lecturers 
-                    for seamless academic growth — anytime, anywhere. Learn, share, and collaborate effortlessly.
+            
+            <div class="col-lg-6" data-aos="fade-right" data-aos-duration="1000">
+                <div class="live-pulse-badge">
+                    <span class="pulse-dot"></span> Next-Gen Portal Live
+                </div>
+                <h1 class="display-4 fw-black mb-3">
+                    Shape Your Future in <span style="color: var(--brand-orange);">Software Engineering</span> & Beyond
+                </h1>
+                <p class="lead mb-4 fs-5 text-muted">
+                    Welcome to the central academic engine of the Katsina State Institute of Technology and Management. 
+                    Access coursework, upload files, write code, and collaborate directly with mentors instantly.
                 </p>
-                <a href="{% url 'register' %}" class="btn btn-warning btn-lg mt-3 shadow-lg animate__animated animate__pulse animate__infinite">
-                    Get Started
-                </a>
+                <div class="d-flex flex-wrap gap-3">
+                    <a href="{% url 'register' %}" class="btn btn-brand btn-lg shadow-sm">
+                        <i class="fa-solid fa-user-plus me-2"></i>Create Student Account
+                    </a>
+                    <a href="{% url 'login' %}" class="btn btn-brand-outline btn-lg">
+                        <i class="fa-solid fa-right-to-bracket me-2"></i>Portal Login
+                    </a>
+                </div>
             </div>
 
-            <!-- Right Hero Image -->
-            <div class="col-md-6 text-center" data-aos="zoom-in" data-aos-duration="1200">
-                <img src="{% static 'images/hero_students.png' %}" alt="Students Learning" class="img-fluid rounded-4 shadow-lg floating-img" style="max-height:450px;">
+            <div class="col-lg-6 text-center mt-5 mt-lg-0" data-aos="zoom-in" data-aos-duration="1000">
+                <img src="{% static 'images/hero_students.png' %}" alt="KSITM Students Academic Matrix" class="img-fluid rounded-4 floating-img" style="max-height: 480px;">
             </div>
+
         </div>
     </div>
 </section>
 
-<!-- About Section -->
-<section class="py-5 about-section">
+<section class="py-5 bg-white border-bottom border-light">
     <div class="container">
-        <div class="row align-items-center">
-            <!-- Image -->
-            <div class="col-md-5 mb-4 mb-md-0" data-aos="fade-right">
-                <img src="{% static 'images/classroom_collaboration.png' %}" alt="Collaboration" class="img-fluid rounded shadow-lg">
-            </div>
-            <!-- Text -->
-            <div class="col-md-7" data-aos="fade-left">
-                <h2 class="fw-bold mb-3">Why KSITM VLCP?</h2>
-                <p class="mb-3">
-                    Experience a modern, interactive learning platform that empowers students and lecturers 
-                    to collaborate beyond the traditional classroom. Access lectures, submit assignments, 
-                    participate in discussions, and grow together — all in one place.
-                </p>
-                <ul class="list-unstyled">
-                    <li class="mb-2" data-aos="fade-left" data-aos-delay="100">✅ Access lectures & resources anytime</li>
-                    <li class="mb-2" data-aos="fade-left" data-aos-delay="200">✅ Real-time communication and chat</li>
-                    <li class="mb-2" data-aos="fade-left" data-aos-delay="300">✅ Collaborative group projects & discussions</li>
-                </ul>
-            </div>
-        </div>
-    </div>
-</section>
-
-<!-- Courses Section -->
-<section class="py-5 courses-section">
-    <div class="container text-center">
-        <h2 class="fw-bold mb-3" data-aos="fade-up">Explore Popular Courses</h2>
-        <p class="mb-5" data-aos="fade-up" data-aos-delay="200">
-            Courses taught by experienced instructors to boost your skills.
-        </p>
-        <div class="row row-cols-1 row-cols-md-3 g-4">
-            {% comment %} Course Cards {% endcomment %}
-            <div class="col" data-aos="zoom-in">
-                <div class="card h-100 border-0 shadow-lg hover-card position-relative overflow-hidden">
-                    <img src="{% static 'images/course_it.png' %}" class="card-img-top rounded-top" alt="IT Course">
-                    <div class="card-body position-relative">
-                        <h5 class="fw-bold text-dark">Introduction to Computing</h5>
-                        <p class="small text-dark">Learn the basics of computing, hardware, and software systems.</p>
-                    </div>
-                </div>
-            </div>
-            <div class="col" data-aos="zoom-in" data-aos-delay="200">
-                <div class="card h-100 border-0 shadow-lg hover-card position-relative overflow-hidden">
-                    <img src="{% static 'images/course_network.png' %}" class="card-img-top rounded-top" alt="Networking">
-                    <div class="card-body position-relative">
-                        <h5 class="fw-bold text-dark">Networking & Cybersecurity</h5>
-                        <p class="small text-dark">Understand network structures and how to protect them from threats.</p>
-                    </div>
-                </div>
-            </div>
-            <div class="col" data-aos="zoom-in" data-aos-delay="400">
-                <div class="card h-100 border-0 shadow-lg hover-card position-relative overflow-hidden">
-                    <img src="{% static 'images/course_business.png' %}" class="card-img-top rounded-top" alt="Business">
-                    <div class="card-body position-relative">
-                        <h5 class="fw-bold text-dark">Business Management</h5>
-                        <p class="small text-dark">Develop leadership, planning, and decision-making skills.</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <a href="{% url 'courses' %}" class="btn btn-warning btn-lg mt-4 animate__animated animate__pulse animate__infinite">View All Courses</a>
-    </div>
-</section>
-
-<!-- Collaboration Section -->
-<section class="py-5 collab-section">
-    <div class="container">
-        <div class="text-center mb-5">
-            <h2 class="fw-bold" data-aos="fade-up">Collaboration & Communication</h2>
-            <p data-aos="fade-up" data-aos-delay="200">
-                Connect with lecturers and classmates in real-time and work together seamlessly.
-            </p>
-        </div>
         <div class="row g-4 text-center">
-            <div class="col-md-4" data-aos="fade-right">
-                <div class="card border-0 shadow-lg hover-card h-100 p-4">
-                    <img src="{% static 'images/chat_icon.png' %}" alt="Chat" class="mb-3" style="width:80px;">
-                    <h5 class="fw-bold text-dark">Discussion Chat</h5>
-                    <p class="text-dark">Engage in academic discussions and group chats in real-time.</p>
-                </div>
+            <div class="col-md-3 col-6" data-aos="fade-up" data-aos-delay="100">
+                <h2 class="display-5 fw-bold mb-1" style="color: var(--brand-orange) !important;">1,200+</h2>
+                <p class="text-uppercase small fw-bold tracking-wider text-muted mb-0">Active Students</p>
             </div>
-            <div class="col-md-4" data-aos="fade-up">
-                <div class="card border-0 shadow-lg hover-card h-100 p-4">
-                    <img src="{% static 'images/group_icon.png' %}" alt="Group Collaboration" class="mb-3" style="width:80px;">
-                    <h5 class="fw-bold text-dark">Group Collaboration</h5>
-                    <p class="text-dark">Work together on assignments and projects effortlessly.</p>
-                </div>
+            <div class="col-md-3 col-6" data-aos="fade-up" data-aos-delay="200">
+                <h2 class="display-5 fw-bold mb-1" style="color: var(--brand-orange) !important;">45+</h2>
+                <p class="text-uppercase small fw-bold tracking-wider text-muted mb-0">Expert Lecturers</p>
             </div>
-            <div class="col-md-4" data-aos="fade-left">
-                <div class="card border-0 shadow-lg hover-card h-100 p-4">
-                    <img src="{% static 'images/announcement_icon.png' %}" alt="Announcements" class="mb-3" style="width:80px;">
-                    <h5 class="fw-bold text-dark">Announcements Board</h5>
-                    <p class="text-dark">Stay updated with lessons, deadlines, and school notices.</p>
-                </div>
+            <div class="col-md-3 col-6" data-aos="fade-up" data-aos-delay="300">
+                <h2 class="display-5 fw-bold mb-1" style="color: var(--brand-orange) !important;">18+</h2>
+                <p class="text-uppercase small fw-bold tracking-wider text-muted mb-0">NID Programs</p>
+            </div>
+            <div class="col-md-3 col-6" data-aos="fade-up" data-aos-delay="400">
+                <h2 class="display-5 fw-bold mb-1" style="color: var(--brand-orange) !important;">99.4%</h2>
+                <p class="text-uppercase small fw-bold tracking-wider text-muted mb-0">Project Success</p>
             </div>
         </div>
     </div>
 </section>
+
+<section class="py-5 bg-light">
+    <div class="container py-3">
+        <div class="text-center max-w-2xl mx-auto mb-5">
+            <h2 class="display-6" data-aos="fade-up">Engineered for Advanced Collaboration</h2>
+            <p class="text-muted" data-aos="fade-up" data-aos-delay="100"> Everything required to accelerate your innovative deployment parameters out of the box.</p>
+        </div>
+
+        <div class="row g-4">
+            
+            <div class="col-md-4" data-aos="fade-up" data-aos-delay="100">
+                <div class="premium-card p-4 h-100">
+                    <div class="icon-box">
+                        <i class="fa-solid fa-folder-open"></i>
+                    </div>
+                    <h4 class="mb-2">Resource Warehouse</h4>
+                    <p class="small mb-0">Download lecture notes, structural templates, documentation, and source configurations compiled dynamically by your department heads.</p>
+                </div>
+            </div>
+
+            <div class="col-md-4" data-aos="fade-up" data-aos-delay="200">
+                <div class="premium-card p-4 h-100">
+                    <div class="icon-box">
+                        <i class="fa-solid fa-comments"></i>
+                    </div>
+                    <h4 class="mb-2">Real-Time Chat Engine</h4>
+                    <p class="small mb-0">Communicate directly with assignments review boards, project groups, and tech cohorts without leaving the platform.</p>
+                </div>
+            </div>
+
+            <div class="col-md-4" data-aos="fade-up" data-aos-delay="300">
+                <div class="premium-card p-4 h-100">
+                    <div class="icon-box">
+                        <i class="fa-solid fa-cloud-arrow-up"></i>
+                    </div>
+                    <h4 class="mb-2">Smart Submissions</h4>
+                    <p class="small mb-0">Push your final PDF reports, project packages, and development files straight to lecturer control desks with instant delivery metrics.</p>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</section>
+
+<section class="py-5 bg-white">
+    <div class="container py-3">
+        <div class="text-center mb-5">
+            <h2 class="display-6" data-aos="fade-up">Access Your Dedicated Channel</h2>
+            <p class="text-muted" data-aos="fade-up" data-aos-delay="100">Select your authorization baseline to handle specific workflows.</p>
+        </div>
+
+        <div class="row g-4">
+            
+            <div class="col-md-4" data-aos="zoom-in" data-aos-delay="100">
+                <div class="premium-card text-center p-4">
+                    <div class="mx-auto icon-box" style="background: rgba(37, 99, 235, 0.08); color: #2563eb;">
+                        <i class="fa-solid fa-graduation-cap"></i>
+                    </div>
+                    <h4>Student Terminal</h4>
+                    <p class="small mb-4">View your custom classroom streams, monitor submissions status, and manage profile variables.</p>
+                    <a href="{% url 'login' %}" class="btn btn-sm btn-outline-primary px-4 w-100" style="border-radius: 6px;">Enter Student Space</a>
+                </div>
+            </div>
+
+            <div class="col-md-4" data-aos="zoom-in" data-aos-delay="200">
+                <div class="premium-card text-center p-4">
+                    <div class="mx-auto icon-box" style="background: rgba(16, 185, 129, 0.08); color: #10b981;">
+                        <i class="fa-solid fa-chalkboard-user"></i>
+                    </div>
+                    <h4>Lecturer Dashboard</h4>
+                    <p class="small mb-4">Configure learning blueprints, issue grades, update boards, and inspect project repositories.</p>
+                    <a href="{% url 'login' %}" class="btn btn-sm btn-outline-success px-4 w-100" style="border-radius: 6px;">Enter Instructor Desk</a>
+                </div>
+            </div>
+
+            <div class="col-md-4" data-aos="zoom-in" data-aos-delay="300">
+                <div class="premium-card text-center p-4">
+                    <div class="mx-auto icon-box" style="background: rgba(31, 41, 55, 0.08); color: #1f2937;">
+                        <i class="fa-solid fa-shield-halved"></i>
+                    </div>
+                    <h4>Admin Central</h4>
+                    <p class="small mb-4">Audit structural database accounts, authorize security credentials, and review telemetry logs.</p>
+                    <a href="{% url 'login' %}" class="btn btn-sm btn-outline-dark px-4 w-100" style="border-radius: 6px;">Management Control</a>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</section>
+
+<section class="py-5 bg-light">
+    <div class="container py-3">
+        <div class="text-center mb-5">
+            <h2 class="display-6" data-aos="fade-up">Getting Started is Simple</h2>
+            <p class="text-muted" data-aos="fade-up" data-aos-delay="100">Follow these standard deployment milestones to bring your portal profile online.</p>
+        </div>
+
+        <div class="row g-4 text-center position-relative">
+            
+            <div class="col-md-4" data-aos="fade-right" data-aos-delay="100">
+                <div class="p-3">
+                    <div class="mx-auto mb-3 d-flex align-items-center justify-content-center bg-white border rounded-circle fw-bold" style="width: 50px; height: 50px; color: var(--brand-orange); border-color: var(--brand-orange)!important;">1</div>
+                    <h5>Registration Setup</h5>
+                    <p class="small">Input your profile information, secure pass-keys, select your functional department, and submit a secure passport layout.</p>
+                </div>
+            </div>
+
+            <div class="col-md-4" data-aos="fade-up" data-aos-delay="200">
+                <div class="p-3">
+                    <div class="mx-auto mb-3 d-flex align-items-center justify-content-center bg-white border rounded-circle fw-bold" style="width: 50px; height: 50px; color: var(--brand-orange); border-color: var(--brand-orange)!important;">2</div>
+                    <h5>Instant Verification</h5>
+                    <p class="small">The administration node checks system parameters and pairs you with corresponding institutional registers cleanly.</p>
+                </div>
+            </div>
+
+            <div class="col-md-4" data-aos="fade-left" data-aos-delay="300">
+                <div class="p-3">
+                    <div class="mx-auto mb-3 d-flex align-items-center justify-content-center bg-white border rounded-circle fw-bold" style="width: 50px; height: 50px; color: var(--brand-orange); border-color: var(--brand-orange)!important;">3</div>
+                    <h5>Complete Operations</h5>
+                    <p class="small">Log into your interface context channel, pull current files instantly, and begin working seamlessly with your groups.</p>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</section>
+
+<section class="py-5 bg-white text-center">
+    <div class="container py-4" data-aos="zoom-in">
+        <h2 class="display-5 mb-3">Ready to Accelerate Your Academics?</h2>
+        <p class="max-w-xl mx-auto mb-4 text-muted fs-5">Set up your secure profile account right now and link directly with your system lectures instantly.</p>
+        <a href="{% url 'register' %}" class="btn btn-brand btn-lg shadow-sm px-5">Launch Account Initialization</a>
+    </div>
+</section>
+
+<script src="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.js"></script>
+<script>
+    AOS.init({ once: true, duration: 800, easing: 'ease-out' });
+</script>
 {% endblock %}
