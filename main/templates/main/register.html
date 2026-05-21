@@ -4,52 +4,252 @@
 
 {% block content %}
 {% with hide_footer=True %}
-<link rel="stylesheet" href="{% static 'css/auth.css' %}">
 <link href="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.css" rel="stylesheet">
 
-<div class="auth-container">
+<style>
+    /* Hacker-lite Obsidian Layout */
+    .auth-wrapper {
+        min-height: 100vh;
+        width: 100%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background-color: #0b0f19; /* Deep space dark */
+        padding: 2rem 1rem;
+        box-sizing: border-box;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
 
-    <!-- Floating shapes -->
-    <div class="floating-shape" style="width:150px;height:150px;background:#2563eb;top:50px;left:50px;" data-aos="fade-down" data-aos-duration="2000"></div>
-    <div class="floating-shape" style="width:100px;height:100px;background:#4f46e5;bottom:80px;right:40px;" data-aos="fade-up" data-aos-duration="2000"></div>
+    .auth-card {
+        background: rgba(17, 24, 39, 0.95); /* Obsidian panel */
+        border: 1px solid rgba(249, 115, 22, 0.15); /* Subtle neon-orange edge */
+        box-shadow: 0 0 30px rgba(0, 0, 0, 0.5), 0 0 20px rgba(249, 115, 22, 0.05);
+        border-radius: 16px;
+        width: 100%;
+        max-width: 850px; /* Wider layout for dual columns */
+        padding: 2.5rem;
+        backdrop-filter: blur(10px);
+        position: relative;
+    }
 
-    <!-- Auth box -->
-    <div class="auth-box" data-aos="zoom-in">
-        <div class="logo-circle">
-            <img src="{% static 'images/ksitm_logo.png' %}" alt="KSITM Logo">
+    /* Top identity header */
+    .auth-header {
+        text-align: center;
+        margin-bottom: 2rem;
+    }
+
+    .brand-logo {
+        width: 75px;
+        height: 75px;
+        object-fit: contain;
+        margin-bottom: 1rem;
+        filter: drop-shadow(0 0 8px rgba(249, 115, 22, 0.3));
+    }
+
+    .auth-title {
+        color: #ffffff;
+        font-size: 1.85rem;
+        font-weight: 700;
+        letter-spacing: -0.5px;
+        margin: 0;
+    }
+    
+    .auth-subtitle {
+        color: #9ca3af;
+        font-size: 0.95rem;
+        margin-top: 0.35rem;
+    }
+
+    /* Smart Multi-Column Grid */
+    .form-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1.25rem 1.5rem;
+    }
+
+    .form-group {
+        display: flex;
+        flex-direction: column;
+    }
+
+    /* Span full width on critical fields if needed */
+    .full-width {
+        grid-column: span 2;
+    }
+
+    /* Hacker-lite Inputs styling */
+    .form-group label {
+        color: #e5e7eb;
+        font-size: 0.85rem;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .form-group input, 
+    .form-group select {
+        background-color: #070a12 !important;
+        border: 1px solid #374151 !important;
+        color: #ffffff !important;
+        padding: 0.75rem 1rem !important;
+        border-radius: 8px !important;
+        font-size: 0.95rem !important;
+        transition: all 0.25s ease-in-out !important;
+        width: 100%;
+        box-sizing: border-box;
+    }
+
+    .form-group input:focus, 
+    .form-group select:focus {
+        outline: none !important;
+        border-color: #f97316 !important; /* Neon Orange highlight */
+        box-shadow: 0 0 10px rgba(249, 115, 22, 0.25) !important;
+    }
+
+    /* File Input Specific Fixes */
+    .form-group input[type="file"] {
+        padding: 0.5rem !important;
+        color: #9ca3af !important;
+        font-size: 0.85rem !important;
+    }
+
+    /* Neon Action Button */
+    .action-container {
+        grid-column: span 2;
+        margin-top: 1.5rem;
+    }
+
+    .neon-btn {
+        width: 100%;
+        background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
+        color: #ffffff;
+        border: none;
+        padding: 0.85rem;
+        font-size: 1rem;
+        font-weight: 700;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        box-shadow: 0 4px 12px rgba(249, 115, 22, 0.2);
+    }
+
+    .neon-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(249, 115, 22, 0.4);
+    }
+
+    .footer-link {
+        text-align: center;
+        margin-top: 1.5rem;
+        color: #9ca3af;
+        font-size: 0.95rem;
+    }
+
+    .footer-link a {
+        color: #f97316;
+        text-decoration: none;
+        font-weight: 600;
+        transition: color 0.2s ease;
+    }
+
+    .footer-link a:hover {
+        color: #fdba74;
+        text-decoration: underline;
+    }
+
+    /* Responsive Breakdown for Tablets/Mobile */
+    @media (max-width: 768px) {
+        .form-grid {
+            grid-template-columns: 1fr; /* Switch to single column stack */
+            gap: 1rem;
+        }
+        .full-width, .action-container {
+            grid-column: span 1;
+        }
+        .auth-card {
+            padding: 1.75rem 1.25rem;
+        }
+        .auth-title {
+            font-size: 1.5rem;
+        }
+    }
+</style>
+
+<div class="auth-wrapper">
+
+    <div class="auth-card" data-aos="zoom-in" data-aos-duration="600">
+        
+        <div class="auth-header">
+            <img src="{% static 'images/ksitm_logo.png' %}" alt="KSITM Logo" class="brand-logo">
+            <h1 class="auth-title">Create Account</h1>
+            <p class="auth-subtitle">Join the Software Engineering Portal</p>
         </div>
-
-        <h3 class="text-white mb-3">Create Account</h3>
 
         <form method="POST" enctype="multipart/form-data">
             {% csrf_token %}
-            <label>Username</label>
-            {{ form.username|add_class:"form-control" }}
-            <label>Email</label>
-            {{ form.email|add_class:"form-control" }}
-            <label>Phone Number</label>
-            {{ form.phone }}
-            <label>Passport Photo</label>
-            {{ form.photo }}
-            <label>Department</label>
-            {{ form.department|add_class:"form-control" }}
-            <label>Register As</label>
-            {{ form.role|add_class:"form-control" }}
-            <label>Password</label>
-            {{ form.password1|add_class:"form-control" }}
-            <label>Confirm Password</label>
-            {{ form.password2|add_class:"form-control" }}
-            <button class="submit-btn">Register</button>
+            
+            <div class="form-grid">
+                
+                <div class="form-group">
+                    <label>Username</label>
+                    {{ form.username|add_class:"form-control" }}
+                </div>
+
+                <div class="form-group">
+                    <label>Email Address</label>
+                    {{ form.email|add_class:"form-control" }}
+                </div>
+
+                <div class="form-group">
+                    <label>Phone Number</label>
+                    {{ form.phone|add_class:"form-control" }}
+                </div>
+
+                <div class="form-group">
+                    <label>Passport Photo</label>
+                    {{ form.photo|add_class:"form-control" }}
+                </div>
+
+                <div class="form-group">
+                    <label>Department</label>
+                    {{ form.department|add_class:"form-control" }}
+                </div>
+
+                <div class="form-group">
+                    <label>Register As</label>
+                    {{ form.role|add_class:"form-control" }}
+                </div>
+
+                <div class="form-group">
+                    <label>Password</label>
+                    {{ form.password1|add_class:"form-control" }}
+                </div>
+
+                <div class="form-group">
+                    <label>Confirm Password</label>
+                    {{ form.password2|add_class:"form-control" }}
+                </div>
+
+                <div class="action-container">
+                    <button type="submit" class="neon-btn">Register System</button>
+                </div>
+
+            </div>
         </form>
 
-        <p class="text-link">Already have an account? <a href="{% url 'login' %}">Login</a></p>
+        <div class="footer-link">
+            Already have an account? <a href="{% url 'login' %}">Login here</a>
+        </div>
     </div>
 
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.js"></script>
 <script>
-  AOS.init({ duration: 800, easing: 'ease-in-out', once: false });
+  AOS.init({ duration: 600, easing: 'ease-in-out', once: true });
 </script>
 {% endwith %}
 {% endblock %}
