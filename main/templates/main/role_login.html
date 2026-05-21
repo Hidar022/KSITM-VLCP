@@ -2,22 +2,224 @@
 {% load static %}
 {% load widget_tweaks %}
 
-{% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/auth.css' %}">
-{% endblock %}
-
 {% block page_wrapper %}
+<link href="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.css" rel="stylesheet">
+
+<style>
+    /* Light Theme Workspace */
+    .auth-wrapper {
+        min-height: 100vh;
+        width: 100%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background-color: #f3f4f6; /* Soft light gray background */
+        padding: 2rem 1rem;
+        box-sizing: border-box;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    .auth-container {
+        display: flex;
+        background: #ffffff; /* Crisp white card */
+        border: 1px solid #e5e7eb;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+        border-radius: 16px;
+        width: 100%;
+        max-width: 950px;
+        overflow: hidden;
+    }
+
+    /* Left Info Side Panel */
+    .auth-info {
+        flex: 1;
+        background: linear-gradient(135deg, #111827 0%, #1f2937 100%); /* Clean dark blue/gray accent panel */
+        padding: 3rem;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        color: #ffffff;
+    }
+
+    .auth-info h2 {
+        font-size: 2rem;
+        font-weight: 700;
+        margin-bottom: 1.5rem;
+        color: #ffffff;
+    }
+
+    .auth-info p {
+        color: #d1d5db;
+        line-height: 1.6;
+        font-size: 1rem;
+        margin-bottom: 1.25rem;
+    }
+
+    /* Right Login Side Panel */
+    .auth-box {
+        flex: 1;
+        padding: 3rem 2.5rem;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        background: #ffffff;
+    }
+
+    .logo-circle {
+        text-align: center;
+        margin-bottom: 1.5rem;
+    }
+
+    .logo-circle img {
+        width: 70px;
+        height: 70px;
+        object-fit: contain;
+    }
+
+    .auth-box h3 {
+        color: #111827;
+        font-size: 1.75rem;
+        font-weight: 700;
+        text-align: center;
+        margin-bottom: 1.5rem;
+    }
+
+    /* Clean Role Tabs */
+    .role-tab-container {
+        display: flex;
+        background: #f3f4f6;
+        padding: 0.35rem;
+        border-radius: 8px;
+        margin-bottom: 1.5rem;
+        gap: 5px;
+    }
+
+    .role-tab {
+        flex: 1;
+        text-align: center;
+        padding: 0.6rem;
+        font-size: 0.9rem;
+        font-weight: 600;
+        color: #4b5563;
+        cursor: pointer;
+        border-radius: 6px;
+        transition: all 0.2s ease;
+    }
+
+    .active-role {
+        background: #ffffff;
+        color: #f97316; /* Orange brand accent */
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    }
+
+    /* Form Fields Styling */
+    form label {
+        color: #374151;
+        font-size: 0.85rem;
+        font-weight: 600;
+        margin-bottom: 0.4rem;
+        display: block;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    form input, form select {
+        background-color: #ffffff !important;
+        border: 1px solid #d1d5db !important;
+        color: #111827 !important;
+        padding: 0.75rem 1rem !important;
+        border-radius: 8px !important;
+        font-size: 0.95rem !important;
+        transition: all 0.2s ease-in-out !important;
+        width: 100%;
+        box-sizing: border-box;
+        margin-bottom: 1.25rem;
+    }
+
+    form input:focus, form select:focus {
+        outline: none !important;
+        border-color: #f97316 !important;
+        box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.15) !important;
+    }
+
+    /* Error Box */
+    .form-errors {
+        background-color: #fef2f2;
+        border: 1px solid #fca5a5;
+        padding: 0.75rem;
+        border-radius: 8px;
+        margin-bottom: 1.25rem;
+    }
+
+    .form-errors p {
+        color: #dc2626;
+        font-size: 0.85rem;
+        margin: 0;
+        font-weight: 500;
+    }
+
+    /* Submit Button */
+    .submit-btn {
+        width: 100%;
+        background: #f97316;
+        color: #ffffff;
+        border: none;
+        padding: 0.85rem;
+        font-size: 1rem;
+        font-weight: 700;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: background 0.2s ease;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-top: 0.5rem;
+    }
+
+    .submit-btn:hover {
+        background: #ea580c;
+    }
+
+    .text-link {
+        text-align: center;
+        margin-top: 1.5rem;
+        color: #4b5563;
+        font-size: 0.95rem;
+    }
+
+    .text-link a {
+        color: #f97316;
+        text-decoration: none;
+        font-weight: 600;
+    }
+
+    .text-link a:hover {
+        text-decoration: underline;
+    }
+
+    /* Hidden element holders */
+    #lecturer-id-box {
+        display: none;
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 768px) {
+        .auth-container {
+            flex-direction: column;
+            max-width: 480px;
+        }
+        .auth-info {
+            display: none; /* Hide informational pane on small cell screens */
+        }
+        .auth-box {
+            padding: 2.5rem 1.5rem;
+        }
+    }
+</style>
+
 <div class="auth-wrapper">
-
-    <!-- Floating shapes -->
-    <div class="floating-shape shape1"></div>
-    <div class="floating-shape shape2"></div>
-
-    <!-- Unified container -->
     <div class="auth-container">
 
-        <!-- Left info panel -->
-        <div class="auth-info" data-aos="fade-right">
+        <div class="auth-info" data-aos="fade-right" data-aos-duration="600">
             <h2>Welcome to KSITM VLCP</h2>
             <p>
                 Our mission is to provide a seamless virtual learning experience. 
@@ -28,24 +230,20 @@
             </p>
         </div>
 
-        <!-- Right login panel -->
-        <div class="auth-box" data-aos="zoom-in">
+        <div class="auth-box" data-aos="zoom-in" data-aos-duration="600">
 
-            <!-- Logo -->
             <div class="logo-circle">
                 <img src="{% static 'images/ksitm_logo.png' %}" alt="KSITM Logo">
             </div>
 
-            <h3 class="mb-4">Login</h3>
+            <h3>Login</h3>
 
-            <!-- Role Tabs -->
             <div class="role-tab-container">
                 <div id="tab-student" class="role-tab active-role" onclick="switchRole('student')">Student</div>
                 <div id="tab-lecturer" class="role-tab" onclick="switchRole('lecturer')">Lecturer</div>
                 <div id="tab-admin" class="role-tab" onclick="switchRole('admin')">Admin</div>
             </div>
 
-            <!-- Login Form -->
             <form method="POST" action="{% url 'login' %}">
                 {% csrf_token %}
                 <input type="hidden" name="role" id="roleInput" value="student" autocomplete="off">
@@ -80,7 +278,10 @@
     </div>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.js"></script>
 <script>
+    AOS.init({ once: true });
+
     function switchRole(role) {
         document.getElementById("roleInput").value = role;
         document.querySelectorAll(".role-tab").forEach(t => t.classList.remove("active-role"));
